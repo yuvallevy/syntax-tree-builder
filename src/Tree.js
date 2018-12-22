@@ -53,9 +53,31 @@ class Tree extends Component {
 
   sliceX = (sentence, start) => this.sliceWidth(sentence, 0, start);
 
+  determinePositions = (sentence, tree) => {
+    if (tree.slice) {
+      return {
+        cat: tree.cat,
+        x: this.sliceX(sentence, tree.slice[0]),
+        width: this.sliceWidth(sentence, tree.slice[0], tree.slice[1])
+      };
+    }
+    return {
+      cat: tree.cat,
+      children: tree.children.map(child => this.determinePositions(sentence, child))
+    };
+  };
+
+  renderTree = (positionedTree, group = null) => {
+    group = group || [];
+    if (positionedTree.x !== undefined) {
+      return [...group, <text x={positionedTree.x + positionedTree.width / 2} y={380} height={20} style={{textAnchor: 'middle', fontSize: '80%'}}>{positionedTree.cat}</text>];
+    }
+    return positionedTree.children.map(child => this.renderTree(child, group));
+  }
+
   renderSvg = (sentence, tree) => (
     <svg xmlns="http://www.w3.org/2000/svg" width={500} height={500}>
-      <rect x={this.sliceX(sentence, 22)} y={380} width={this.sliceWidth(sentence, 22, 27)} height={40} fill="lightgreen" />
+      {this.renderTree(this.determinePositions(sentence, tree))}
       <text x={0} y={400}>{sentence}</text>
     </svg>
   )
