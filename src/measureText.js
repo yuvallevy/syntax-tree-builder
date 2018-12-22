@@ -6,8 +6,8 @@ export function measureText(str) {
     const measurementElement = document.createElement('span');
     measurementElement.id = MEASUREMENT_ELEMENT_ID;
     measurementElement.style.position = 'absolute';
-    measurementElement.style.left = -99999;
-    measurementElement.style.top = -99999;
+    measurementElement.style.left = '-100%';
+    measurementElement.style.top = '-100%';
     measurementElement.style.padding = 0;
     measurementElement.style.whiteSpace = 'pre';
     document.body.appendChild(measurementElement);
