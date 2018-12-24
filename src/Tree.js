@@ -69,10 +69,13 @@ class Tree extends Component {
 
   renderTree = (positionedTree, group = null) => {
     group = group || [];
-    if (positionedTree.x !== undefined) {
-      return [...group, <text x={positionedTree.x + positionedTree.width / 2} y={380} height={20} style={{textAnchor: 'middle', fontSize: '80%'}}>{positionedTree.cat}</text>];
+    group.push(<text x={positionedTree.x + positionedTree.width / 2} y={380} height={20} style={{textAnchor: 'middle', fontSize: '80%'}}>{positionedTree.cat}</text>);
+    if (positionedTree.children) {
+      for (const child of positionedTree.children) {
+        this.renderTree(child, group);
+      }
     }
-    return positionedTree.children.map(child => this.renderTree(child, group));
+    return group;
   }
 
   renderSvg = (sentence, tree) => (
