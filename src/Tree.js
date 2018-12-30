@@ -125,6 +125,7 @@ class Tree extends Component {
     if (positionedTree.children) {
       for (const child of positionedTree.children) {
         this.renderTree(child, group);
+        group.push(<line x1={positionedTree.x} y1={positionedTree.y + 3} x2={child.x} y2={child.y - 15} stroke="black" strokeLinecap="round" />);
       }
     }
     return group;
