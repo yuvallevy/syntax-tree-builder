@@ -48,6 +48,8 @@ const TREE = {
   ]
 }
 
+const SENTENCE_Y = 400;
+
 class Tree extends Component {
   sliceWidth = (sentence, start, end) => measureText(sentence.slice(start, end));
 
@@ -58,7 +60,8 @@ class Tree extends Component {
     if (tree.slice) {
       return {
         cat: tree.cat,
-        x: this.sliceX(sentence, tree.slice[0]) + this.sliceWidth(sentence, tree.slice[0], tree.slice[1]) / 2
+        x: this.sliceX(sentence, tree.slice[0]) + this.sliceWidth(sentence, tree.slice[0], tree.slice[1]) / 2,
+        y: SENTENCE_Y - 20
       };
     }
 
@@ -69,12 +72,13 @@ class Tree extends Component {
     };
     positionedTree.x =
       positionedTree.children.reduce((sum, child) => sum + child.x, 0) / positionedTree.children.length;
+    positionedTree.y = Math.min(...positionedTree.children.map(child => child.y)) - 40;
     return positionedTree;
   };
 
   renderTree = (positionedTree, group = null) => {
     group = group || [];
-    group.push(<text x={positionedTree.x} y={380} height={20} style={{textAnchor: 'middle', fontSize: '80%'}}>{positionedTree.cat}</text>);
+    group.push(<text x={positionedTree.x} y={positionedTree.y} height={20} style={{textAnchor: 'middle', fontSize: '80%'}}>{positionedTree.cat}</text>);
     if (positionedTree.children) {
       for (const child of positionedTree.children) {
         this.renderTree(child, group);
@@ -86,7 +90,7 @@ class Tree extends Component {
   renderSvg = (sentence, tree) => (
     <svg xmlns="http://www.w3.org/2000/svg" width={500} height={500}>
       {this.renderTree(this.determinePositions(sentence, tree))}
-      <text x={0} y={400}>{sentence}</text>
+      <text x={0} y={SENTENCE_Y}>{sentence}</text>
     </svg>
   )
 
