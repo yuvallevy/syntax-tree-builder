@@ -48,33 +48,51 @@ const TREE = {
   ]
 }
 
-const SENTENCE_Y = 400;
-
 class Tree extends Component {
   sliceWidth = (sentence, start, end) => measureText(sentence.slice(start, end));
 
   sliceX = (sentence, start) => this.sliceWidth(sentence, 0, start);
 
-  determinePositions = (sentence, tree) => {
+  getTreeBaseY = (offsetTree) => {
+    return -offsetTree.yOffset + 20;
+  };
+
+  determineOffsets = (sentence, tree) => {
     // If this is a leaf node, just determine its position
     if (tree.slice) {
       return {
         cat: tree.cat,
-        x: this.sliceX(sentence, tree.slice[0]) + this.sliceWidth(sentence, tree.slice[0], tree.slice[1]) / 2,
-        y: SENTENCE_Y - 20
+        xOffset: this.sliceX(sentence, tree.slice[0]) + this.sliceWidth(sentence, tree.slice[0], tree.slice[1]) / 2,
+        yOffset: -20
       };
     }
 
     // Otherwise, determine the children's positions first then use them to determine the current node's position
-    const positionedTree = {
+    const offsetTree = {
       cat: tree.cat,
-      children: tree.children.map(child => this.determinePositions(sentence, child))
+      children: tree.children.map(child => this.determineOffsets(sentence, child))
     };
-    positionedTree.x =
-      positionedTree.children.reduce((sum, child) => sum + child.x, 0) / positionedTree.children.length;
-    positionedTree.y = Math.min(...positionedTree.children.map(child => child.y)) - 40;
-    return positionedTree;
+    offsetTree.xOffset = offsetTree.children.reduce((sum, child) => sum + child.xOffset, 0) / offsetTree.children.length;
+    offsetTree.yOffset = Math.min(...offsetTree.children.map(child => child.yOffset)) - 40;
+    return offsetTree;
   };
+
+  determineAbsolutePositions = (offsetTree, baseY = null) => {
+    baseY = baseY || this.getTreeBaseY(offsetTree);
+    if (offsetTree.children) {
+      return {
+        cat: offsetTree.cat,
+        x: offsetTree.xOffset,
+        y: offsetTree.yOffset + baseY,
+        children: offsetTree.children.map(child => this.determineAbsolutePositions(child, baseY))
+      };
+    }
+    return {
+      cat: offsetTree.cat,
+      x: offsetTree.xOffset,
+      y: offsetTree.yOffset + baseY
+    };
+  }
 
   renderTree = (positionedTree, group = null) => {
     group = group || [];
@@ -85,14 +103,18 @@ class Tree extends Component {
       }
     }
     return group;
-  }
+  };
 
-  renderSvg = (sentence, tree) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={500} height={500}>
-      {this.renderTree(this.determinePositions(sentence, tree))}
-      <text x={0} y={SENTENCE_Y}>{sentence}</text>
-    </svg>
-  )
+  renderSvg = (sentence, tree) => {
+    const offsetTree = this.determineOffsets(sentence, tree);
+    const positionedTree = this.determineAbsolutePositions(offsetTree);
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={500} height={500}>
+        {this.renderTree(positionedTree)}
+        <text x={0} y={this.getTreeBaseY(offsetTree)}>{sentence}</text>
+      </svg>
+    )
+  };
 
   render() {
     return (
