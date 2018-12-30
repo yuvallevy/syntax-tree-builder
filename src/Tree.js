@@ -49,6 +49,8 @@ const TREE = {
 }
 
 const SVG_MARGIN_TOP = 20;
+const SVG_MARGIN_BOTTOM = 10;
+
 class Tree extends Component {
   /**
    * Returns the width of the given sentence slice.
@@ -135,7 +137,7 @@ class Tree extends Component {
     const offsetTree = this.determineOffsets(sentence, tree);
     const positionedTree = this.determineAbsolutePositions(offsetTree);
     return (
-      <svg xmlns="http://www.w3.org/2000/svg" width={500} height={500}>
+      <svg xmlns="http://www.w3.org/2000/svg" width={this.sliceWidth(sentence)} height={this.getTreeBaseY(offsetTree) + SVG_MARGIN_BOTTOM}>
         {this.renderTree(positionedTree)}
         <text x={0} y={this.getTreeBaseY(offsetTree)}>{sentence}</text>
       </svg>
