@@ -54,22 +54,27 @@ class Tree extends Component {
   sliceX = (sentence, start) => this.sliceWidth(sentence, 0, start);
 
   determinePositions = (sentence, tree) => {
+    // If this is a leaf node, just determine its position
     if (tree.slice) {
       return {
         cat: tree.cat,
-        x: this.sliceX(sentence, tree.slice[0]),
-        width: this.sliceWidth(sentence, tree.slice[0], tree.slice[1])
+        x: this.sliceX(sentence, tree.slice[0]) + this.sliceWidth(sentence, tree.slice[0], tree.slice[1]) / 2
       };
     }
-    return {
+
+    // Otherwise, determine the children's positions first then use them to determine the current node's position
+    const positionedTree = {
       cat: tree.cat,
       children: tree.children.map(child => this.determinePositions(sentence, child))
     };
+    positionedTree.x =
+      positionedTree.children.reduce((sum, child) => sum + child.x, 0) / positionedTree.children.length;
+    return positionedTree;
   };
 
   renderTree = (positionedTree, group = null) => {
     group = group || [];
-    group.push(<text x={positionedTree.x + positionedTree.width / 2} y={380} height={20} style={{textAnchor: 'middle', fontSize: '80%'}}>{positionedTree.cat}</text>);
+    group.push(<text x={positionedTree.x} y={380} height={20} style={{textAnchor: 'middle', fontSize: '80%'}}>{positionedTree.cat}</text>);
     if (positionedTree.children) {
       for (const child of positionedTree.children) {
         this.renderTree(child, group);
