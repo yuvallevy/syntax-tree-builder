@@ -51,6 +51,7 @@ const TREE = {
 const SVG_MARGIN_TOP = 20;
 const SVG_MARGIN_BOTTOM = 10;
 const PART_OF_SPEECH_Y_OFFSET = -20;
+const TREE_LEVEL_SPACING = 40;
 
 class Tree extends Component {
   /**
@@ -91,7 +92,7 @@ class Tree extends Component {
       children: tree.children.map(child => this.determineOffsets(sentence, child))
     };
     offsetTree.xOffset = offsetTree.children.reduce((sum, child) => sum + child.xOffset, 0) / offsetTree.children.length;
-    offsetTree.yOffset = Math.min(...offsetTree.children.map(child => child.yOffset)) - 40;
+    offsetTree.yOffset = Math.min(...offsetTree.children.map(child => child.yOffset)) - TREE_LEVEL_SPACING;
     return offsetTree;
   };
 
