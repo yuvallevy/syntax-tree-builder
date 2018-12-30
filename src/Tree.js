@@ -49,14 +49,28 @@ const TREE = {
 }
 
 class Tree extends Component {
+  /**
+   * Returns the width of the given sentence slice.
+   */
   sliceWidth = (sentence, start, end) => measureText(sentence.slice(start, end));
 
+  /**
+   * Returns the X position of the given character position in the sentence.
+   */
   sliceX = (sentence, start) => this.sliceWidth(sentence, 0, start);
 
+  /**
+   * Returns where on the Y axis the sentence should be located in order for the entire tree to be visible.
+   */
   getTreeBaseY = (offsetTree) => {
     return -offsetTree.yOffset + 20;
   };
 
+  /**
+   * Returns an "offset tree": a copy of the given tree for the given sentence, with position offsets indicating where
+   * each node should be located relative to the sentence itself.
+   * Traverses the entire tree in postorder.
+   */
   determineOffsets = (sentence, tree) => {
     // If this is a leaf node, just determine its position
     if (tree.slice) {
@@ -77,6 +91,11 @@ class Tree extends Component {
     return offsetTree;
   };
 
+  /**
+   * Returns a "positioned tree": a copy of the given offset tree with absolute positions according to the given base.
+   * If no base Y is given, it is calculated from the tree's Y offsets.
+   * Traverses the entire tree in preorder.
+   */
   determineAbsolutePositions = (offsetTree, baseY = null) => {
     baseY = baseY || this.getTreeBaseY(offsetTree);
     if (offsetTree.children) {
@@ -94,6 +113,9 @@ class Tree extends Component {
     };
   }
 
+  /**
+   * Returns an array of JSX elements representing the nodes of the given tree.
+   */
   renderTree = (positionedTree, group = null) => {
     group = group || [];
     group.push(<text x={positionedTree.x} y={positionedTree.y} height={20} style={{textAnchor: 'middle', fontSize: '80%'}}>{positionedTree.cat}</text>);
@@ -105,6 +127,9 @@ class Tree extends Component {
     return group;
   };
 
+  /**
+   * Renders the entire tree for the given sentence.
+   */
   renderSvg = (sentence, tree) => {
     const offsetTree = this.determineOffsets(sentence, tree);
     const positionedTree = this.determineAbsolutePositions(offsetTree);
