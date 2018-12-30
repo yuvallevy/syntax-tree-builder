@@ -48,6 +48,7 @@ const TREE = {
   ]
 }
 
+const SVG_MARGIN_TOP = 20;
 class Tree extends Component {
   /**
    * Returns the width of the given sentence slice.
@@ -63,7 +64,7 @@ class Tree extends Component {
    * Returns where on the Y axis the sentence should be located in order for the entire tree to be visible.
    */
   getTreeBaseY = (offsetTree) => {
-    return -offsetTree.yOffset + 20;
+    return -offsetTree.yOffset + SVG_MARGIN_TOP;
   };
 
   /**
