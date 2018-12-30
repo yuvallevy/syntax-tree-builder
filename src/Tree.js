@@ -50,6 +50,7 @@ const TREE = {
 
 const SVG_MARGIN_TOP = 20;
 const SVG_MARGIN_BOTTOM = 10;
+const PART_OF_SPEECH_Y_OFFSET = -20;
 
 class Tree extends Component {
   /**
@@ -80,7 +81,7 @@ class Tree extends Component {
       return {
         cat: tree.cat,
         xOffset: this.sliceX(sentence, tree.slice[0]) + this.sliceWidth(sentence, tree.slice[0], tree.slice[1]) / 2,
-        yOffset: -20
+        yOffset: PART_OF_SPEECH_Y_OFFSET
       };
     }
 
