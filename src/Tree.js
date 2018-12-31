@@ -77,23 +77,23 @@ class Tree extends Component {
    * Traverses the entire tree in postorder.
    */
   determineOffsets = (sentence, tree) => {
-    // If this is a leaf node, just determine its position
-    if (tree.slice) {
-      return {
+    // If this node is fertile, determine the children's positions first then derive the current node's desired position
+    if (tree.children) {
+      const offsetTree = {
         cat: tree.cat,
-        xOffset: this.sliceX(sentence, tree.slice[0]) + this.sliceWidth(sentence, tree.slice[0], tree.slice[1]) / 2,
-        yOffset: PART_OF_SPEECH_Y_OFFSET
+        children: tree.children.map(child => this.determineOffsets(sentence, child))
       };
+      offsetTree.xOffset = offsetTree.children.reduce((sum, child) => sum + child.xOffset, 0) / offsetTree.children.length;
+      offsetTree.yOffset = Math.min(...offsetTree.children.map(child => child.yOffset)) - TREE_LEVEL_SPACING;
+      return offsetTree;
     }
 
-    // Otherwise, determine the children's positions first then use them to determine the current node's position
-    const offsetTree = {
+    // Otherwise (i.e. if this is a leaf node), just determine its position
+    return {
       cat: tree.cat,
-      children: tree.children.map(child => this.determineOffsets(sentence, child))
+      xOffset: this.sliceX(sentence, tree.slice[0]) + this.sliceWidth(sentence, tree.slice[0], tree.slice[1]) / 2,
+      yOffset: PART_OF_SPEECH_Y_OFFSET
     };
-    offsetTree.xOffset = offsetTree.children.reduce((sum, child) => sum + child.xOffset, 0) / offsetTree.children.length;
-    offsetTree.yOffset = Math.min(...offsetTree.children.map(child => child.yOffset)) - TREE_LEVEL_SPACING;
-    return offsetTree;
   };
 
   /**
