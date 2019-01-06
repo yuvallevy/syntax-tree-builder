@@ -1,52 +1,6 @@
 import React, { Component } from 'react';
 import { measureText } from './measureText';
-
-const SENTENCE = 'Colorless green ideas sleep furiously.';
-const TREE = {
-  cat: 'S',
-  children: [
-    {
-      cat: 'NP',
-      children: [
-        {
-          cat: 'Adj',
-          slice: [0, 9]
-        },
-        {
-          cat: 'NP',
-          children: [
-            {
-              cat: 'Adj',
-              slice: [10, 15]
-            },
-            {
-              cat: 'N',
-              slice: [16, 21]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      cat: 'VP',
-      children: [
-        {
-          cat: 'V',
-          slice: [22, 27]
-        },
-        {
-          cat: 'AdvP',
-          children: [
-            {
-              cat: 'Adv',
-              slice: [28, 37]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
+import { SENTENCE, TREE } from './examples';
 
 const SVG_MARGIN_TOP = 20;
 const SVG_MARGIN_BOTTOM = 10;
@@ -123,6 +77,7 @@ class Tree extends Component {
    */
   renderTree = (positionedTree, group = null) => {
     group = group || [];
+    // TODO: key prop
     group.push(<text x={positionedTree.x} y={positionedTree.y} height={20} style={{textAnchor: 'middle', fontSize: '80%'}}>{positionedTree.cat}</text>);
     if (positionedTree.children) {
       for (const child of positionedTree.children) {
