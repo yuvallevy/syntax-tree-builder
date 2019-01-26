@@ -1,0 +1,12 @@
+.View {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.View input[type=text] {
+  text-align: center;
+  border: none;
+  padding: 0;
+  margin: 0;
+}

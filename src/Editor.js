@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import View from './View';
 import { SENTENCE } from './examples';
 import './Editor.css';
 
@@ -10,20 +11,14 @@ class Editor extends Component {
     };
   }
 
-  onInputChanged = (event) => {
-    this.setState({sentence: event.target.value});
-  }
-
-  renderInput = () => {
-    return (
-      <input type="text" value={this.state.sentence} onInput={this.onInputChanged} />
-    );
+  onSentenceChanged = (newSentence) => {
+    this.setState({sentence: newSentence});
   }
 
   render() {
     return (
       <div className="Editor">
-        {this.renderInput()}
+        <View sentence={this.state.sentence} onSentenceChanged={this.onSentenceChanged} />
       </div>
     )
   }
