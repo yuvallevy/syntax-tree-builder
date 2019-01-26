@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import View from './View';
+import Controls from './Controls';
 import { SENTENCE } from './examples';
 import './Editor.css';
 
@@ -19,6 +20,7 @@ class Editor extends Component {
     return (
       <div className="Editor">
         <View sentence={this.state.sentence} onSentenceChanged={this.onSentenceChanged} />
+        <Controls />
       </div>
     )
   }
