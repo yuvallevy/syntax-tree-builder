@@ -5,7 +5,9 @@ class Controls extends Component {
   render() {
     return (
       <div className="Controls">
-
+        <button type="button" onClick={this.props.onNodeAdded}>
+          New Node
+        </button>
       </div>
     );
   }
