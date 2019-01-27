@@ -8,7 +8,8 @@ class Editor extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sentence: SENTENCE
+      sentence: SENTENCE,
+      selectedRange: null
     };
   }
 
@@ -16,11 +17,21 @@ class Editor extends Component {
     this.setState({sentence: newSentence});
   }
 
+  onSelectionChanged = (start, end) => {
+    this.setState({selectedRange: [start, end]});
+  }
+
   render() {
     return (
       <div className="Editor">
-        <View sentence={this.state.sentence} onSentenceChanged={this.onSentenceChanged} />
-        <Controls />
+        <View
+          sentence={this.state.sentence}
+          onSentenceChanged={this.onSentenceChanged}
+          onSelectionChanged={this.onSelectionChanged}
+        />
+        <Controls
+          selectedRange={this.state.selectedRange}
+        />
       </div>
     )
   }
