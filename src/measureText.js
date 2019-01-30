@@ -1,6 +1,12 @@
 const MEASUREMENT_ELEMENT_ID = 'text-measurement';
 
+const cache = {};
+
 export function measureText(str) {
+  if (cache[str]) {
+    return cache[str];
+  }
+
   let el = document.getElementById(MEASUREMENT_ELEMENT_ID);
   if (!el) {
     const measurementElement = document.createElement('span');
@@ -14,5 +20,7 @@ export function measureText(str) {
     el = document.getElementById(MEASUREMENT_ELEMENT_ID);
   }
   el.innerText = str;
-  return el.getBoundingClientRect().width;
+  const width = el.getBoundingClientRect().width;
+  cache[str] = width;
+  return width;
 }
