@@ -2,11 +2,7 @@ const MEASUREMENT_ELEMENT_ID = 'text-measurement';
 
 const cache = {};
 
-export function measureText(str) {
-  if (cache[str]) {
-    return cache[str];
-  }
-
+function getMeasurementElement() {
   let el = document.getElementById(MEASUREMENT_ELEMENT_ID);
   if (!el) {
     const measurementElement = document.createElement('span');
@@ -19,6 +15,15 @@ export function measureText(str) {
     document.body.appendChild(measurementElement);
     el = document.getElementById(MEASUREMENT_ELEMENT_ID);
   }
+  return el;
+}
+
+export function measureText(str) {
+  if (cache[str]) {
+    return cache[str];
+  }
+
+  let el = getMeasurementElement();
   el.innerText = str;
   const width = el.getBoundingClientRect().width;
   cache[str] = width;
