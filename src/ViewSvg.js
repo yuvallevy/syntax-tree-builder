@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { measureText } from './measureText';
 
 class ViewSvg extends Component {
   renderNodes = () => this.props.nodes.map(
@@ -7,7 +8,7 @@ class ViewSvg extends Component {
 
   render() {
     return (
-      <svg width={200} height={200}>
+      <svg width={measureText(this.props.sentence)} height={200}>
         {this.renderNodes()}
       </svg>
     )
