@@ -3,10 +3,12 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
 }
 
 .View input[type=text] {
   text-align: center;
+  align-self: stretch;
   border: none;
   padding: 0;
   margin: 0;
