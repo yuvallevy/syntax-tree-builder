@@ -14,7 +14,10 @@ class ViewSvg extends Component {
 
   computeNodeX = (node) => node.slice ? this.computeXBySlice(...node.slice) : this.computeXByChildren(node.children);
 
-  computeNodeY = (node) => 190;
+  computeYByChildren = (children) =>
+    Math.min(...children.map(childId => this.computeNodeY(this.props.nodes[childId]))) - 40;
+
+  computeNodeY = (node) => node.slice ? 190 : this.computeYByChildren(node.children);
 
   computeNodePositions = () => Object.entries(this.props.nodes).map(([id, node]) => ({
     ...node,
