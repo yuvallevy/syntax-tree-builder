@@ -12,17 +12,7 @@ class ViewSvg extends Component {
 
   computeXByChildren = (children) => avg(children.map(childId => this.computeNodeX(this.props.nodes[childId])));
 
-  computeNodeX = (node) => {
-    console.log(node.label);
-    if (node.slice) {
-      console.log('slice');
-      return this.computeXBySlice(...node.slice);
-    }
-    if (node.children) {
-      console.log('children');
-      return this.computeXByChildren(node.children);
-    }
-  }
+  computeNodeX = (node) => node.slice ? this.computeXBySlice(...node.slice) : this.computeXByChildren(node.children);
 
   computeNodeY = (node) => 190;
 
