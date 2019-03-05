@@ -1,30 +1,48 @@
 import React, { Component } from 'react';
 import { measureText } from './measureText';
+import { avg } from './utils';
 
 class ViewSvg extends Component {
-  determineNodeX = (node) => {
+  state = {
+    positionedNodes: null
+  };
+
+  computeXBySlice = (start, end) => measureText(this.props.sentence.slice(0, start)) +
+    (measureText(this.props.sentence.slice(start, end)) / 2);
+
+  computeXByChildren = (children) => avg(children.map(childId => this.computeNodeX(this.props.nodes[childId])));
+
+  computeNodeX = (node) => {
+    console.log(node.label);
     if (node.slice) {
-      return measureText(this.props.sentence.slice(0, node.slice[0])) +
-        (measureText(this.props.sentence.slice(...node.slice)) / 2);
+      console.log('slice');
+      return this.computeXBySlice(...node.slice);
     }
-    return 0;
+    if (node.children) {
+      console.log('children');
+      return this.computeXByChildren(node.children);
+    }
   }
 
-  determineNodeY = (node) => {
-    return 190;
-  }
+  computeNodeY = (node) => 190;
 
-  renderNodes = () => this.props.nodes.map(
+  computeNodePositions = () => Object.entries(this.props.nodes).map(([id, node]) => ({
+    ...node,
+    x: this.computeNodeX(node),
+    y: this.computeNodeY(node)
+  }));
+
+  renderNodes = () => Object.values(this.state.positionedNodes || {}).map(
     node => (
-      <text
-        x={this.determineNodeX(node)}
-        y={this.determineNodeY(node)}
-        textAnchor="middle"
-      >
+      <text x={node.x} y={node.y} textAnchor="middle">
         {node.label}
       </text>
     )
   );
+
+  componentDidMount() {
+    this.setState({positionedNodes: this.computeNodePositions()});
+  }
 
   render() {
     return (
