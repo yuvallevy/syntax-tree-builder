@@ -8,7 +8,20 @@ class Editor extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      nodes: [],
+      nodes: {
+        0: {
+          label: 'Adj',
+          slice: [10, 15]
+        },
+        1: {
+          label: 'N',
+          slice: [16, 21]
+        },
+        2: {
+          label: 'NP',
+          children: [0, 1]
+        }
+      },
       sentence: SENTENCE,
       selectedRange: null,
       selectedNodes: null
