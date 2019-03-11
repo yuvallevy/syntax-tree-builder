@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { measureText } from './measureText';
 import { avg } from './utils';
+import { flatMap } from 'lodash';
+import './ViewSvg.css';
 
 class ViewSvg extends Component {
   state = {
@@ -59,6 +61,13 @@ class ViewSvg extends Component {
     )
   );
 
+  renderLinks = () => flatMap(Object.values(this.state.positionedNodes || {}),
+    node => node.children ? node.children.map(childId => {
+      const child = this.state.positionedNodes[childId];
+      return <line className="tree-link" x1={node.x} y1={node.y + 4} x2={child.x} y2={child.y - 16} />
+    }) : []
+  );
+
   componentDidMount() {
     this.setState({positionedNodes: this.computeNodePositions()});
   }
@@ -67,6 +76,7 @@ class ViewSvg extends Component {
     return (
       <svg width={measureText(this.props.sentence)} height={200}>
         {this.renderNodes()}
+        {this.renderLinks()}
       </svg>
     )
   }
