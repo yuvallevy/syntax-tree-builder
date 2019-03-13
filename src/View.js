@@ -24,7 +24,6 @@ class View extends Component {
   render() {
     return (
       <div className="View">
-        <pre>{JSON.stringify(this.props.nodes, null, 2)}</pre>
         <ViewSvg nodes={this.props.nodes} sentence={this.props.sentence} />
         {this.renderInput()}
       </div>
