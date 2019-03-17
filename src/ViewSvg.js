@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { measureText } from './measureText';
 import { avg } from './utils';
 import { flatMap } from 'lodash';
+import deepEqual from 'deep-equal';
 import './ViewSvg.css';
 
 class ViewSvg extends Component {
@@ -93,8 +94,18 @@ class ViewSvg extends Component {
     }) : []
   );
 
-  componentDidMount() {
+  updateNodePositions = () => {
     this.setState({positionedNodes: this.computeNodePositions()});
+  }
+
+  componentDidMount() {
+    this.updateNodePositions();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!deepEqual(prevProps.nodes, this.props.nodes)) {
+      this.updateNodePositions();
+    }
   }
 
   render() {
