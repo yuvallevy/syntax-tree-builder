@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import View from './View';
 import Controls from './Controls';
 import { SENTENCE } from './examples';
+import { generateId } from './utils';
 import './Editor.css';
 
 class Editor extends Component {
@@ -66,10 +67,13 @@ class Editor extends Component {
   onNodeAdded = () => {
     if (this.state.selectedRange) {
       this.setState({
-        nodes: [...this.state.nodes, {
-          label: 'P',
-          slice: this.state.selectedRange
-        }]
+        nodes: {
+          ...this.state.nodes,
+          [generateId()]: {
+            label: 'P',
+            slice: this.state.selectedRange
+          }
+        }
       });
     }
   }
