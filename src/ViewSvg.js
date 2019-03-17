@@ -6,7 +6,8 @@ import './ViewSvg.css';
 
 class ViewSvg extends Component {
   state = {
-    positionedNodes: null
+    positionedNodes: null,
+    selectedNodeId: null
   };
 
   /**
@@ -53,9 +54,26 @@ class ViewSvg extends Component {
     y: this.computeNodeY(node)
   }));
 
-  renderNodes = () => Object.values(this.state.positionedNodes || {}).map(
-    node => (
-      <text x={node.x} y={node.y} textAnchor="middle">
+  /**
+   * Sets a node as selected.
+   * @param event Event that triggered the selection.
+   */
+  selectNode = (event) => {
+    this.setState({
+      selectedNodeId: event.target.id
+    });
+  };
+
+  renderNodes = () => Object.entries(this.state.positionedNodes || {}).map(
+    ([nodeId, node]) => (
+      <text
+        key={nodeId}
+        x={node.x} y={node.y}
+        textAnchor="middle"
+        id={nodeId}
+        className={nodeId === this.state.selectedNodeId ? 'node selected' : 'node'}
+        onClick={this.selectNode}
+      >
         {node.label}
       </text>
     )

@@ -2,3 +2,7 @@
   stroke: black;
   stroke-width: 1px;
 }
+
+.selected {
+  fill: red;
+}
