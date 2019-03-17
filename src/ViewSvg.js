@@ -110,10 +110,12 @@ class ViewSvg extends Component {
 
   render() {
     return (
-      <svg width={measureText(this.props.sentence)} height={200}>
-        {this.renderNodes()}
-        {this.renderLinks()}
-      </svg>
+      <div>
+        <svg width={measureText(this.props.sentence)} height={200}>
+          {this.renderNodes()}
+          {this.renderLinks()}
+        </svg>
+      </div>
     )
   }
 }
