@@ -10,12 +10,12 @@ class View extends Component {
   onSelectionChanged = event => {
     this.props.onSelectionChanged(event.target.selectionStart, event.target.selectionEnd);
   }
-  
+
   renderInput = () => {
     return (
       <input
         type="text" value={this.props.sentence}
-        onInput={this.onInputChanged}
+        onChange={this.onInputChanged}
         onSelect={this.onSelectionChanged}
       />
     );
