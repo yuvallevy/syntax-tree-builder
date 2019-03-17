@@ -82,7 +82,14 @@ class ViewSvg extends Component {
   renderLinks = () => flatMap(Object.values(this.state.positionedNodes || {}),
     node => node.children ? node.children.map(childId => {
       const child = this.state.positionedNodes[childId];
-      return <line className="tree-link" x1={node.x} y1={node.y + 4} x2={child.x} y2={child.y - 16} />
+      return <line
+        key={childId}
+        className="tree-link"
+        x1={node.x}
+        y1={node.y + 4}
+        x2={child.x}
+        y2={child.y - 16}
+      />
     }) : []
   );
 
