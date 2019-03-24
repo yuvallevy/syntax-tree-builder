@@ -11,6 +11,9 @@ class ViewSvg extends Component {
     selectedNodeId: null
   };
 
+  xCache = {};
+  yCache = {};
+
   /**
    * Calculates the X position of a leaf node corresponding to the given sentence slice.
    * @param  {number} start Start position of the slice (inclusive).
@@ -25,7 +28,7 @@ class ViewSvg extends Component {
    * @param  {Array}  children List of children.
    * @return {number}          Node's target X position.
    */
-  computeXByChildren = (children) => avg(children.map(childId => this.computeNodeX(this.props.nodes[childId])));
+  computeXByChildren = (children) => avg(children.map(childId => this.getNodeX(this.props.nodes[childId])));
 
   /**
    * Calculates the X position of the given node.
@@ -40,7 +43,7 @@ class ViewSvg extends Component {
    * @return {number}          Node's target Y position.
    */
   computeYByChildren = (children) =>
-    Math.min(...children.map(childId => this.computeNodeY(this.props.nodes[childId]))) - 40;
+    Math.min(...children.map(childId => this.getNodeY(this.props.nodes[childId]))) - 40;
 
   /**
    * Calculates the Y position of the given node.
@@ -49,11 +52,39 @@ class ViewSvg extends Component {
    */
   computeNodeY = (node) => node.slice ? 190 : this.computeYByChildren(node.children);
 
-  computeNodePositions = () => Object.entries(this.props.nodes).map(([id, node]) => ({
-    ...node,
-    x: this.computeNodeX(node),
-    y: this.computeNodeY(node)
-  }));
+  /**
+   * Returns the X position of the given node and caches the result, or retrieves it if it is already cached.
+   * @param  {string} node Node to position.
+   * @return {number}      Node's target X position.
+   */
+  getNodeX = (node) => {
+    if (!this.xCache[node.id]) {
+      this.xCache[node.id] = this.computeNodeX(node);
+    }
+    return this.xCache[node.id];
+  };
+
+  /**
+   * Returns the Y position of the given node and caches the result, or retrieves it if it is already cached.
+   * @param  {string} node Node to position.
+   * @return {number}      Node's target Y position.
+   */
+  getNodeY = (node) => {
+    if (!this.yCache[node.id]) {
+      this.yCache[node.id] = this.computeNodeY(node);
+    }
+    return this.yCache[node.id];
+  };
+
+  computeNodePositions = () => {
+    this.xCache = {};
+    this.yCache = {};
+    return Object.entries(this.props.nodes).map(([id, node]) => ({
+      ...node,
+      x: this.getNodeX(node),
+      y: this.getNodeY(node)
+    }));
+  }
 
   /**
    * Sets a node as selected.
