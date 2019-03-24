@@ -29,10 +29,12 @@ class Editor extends Component {
 
   onNodeAdded = () => {
     if (this.state.selectedRange) {
+      const newNodeId = generateId();
       this.setState({
         nodes: {
           ...this.state.nodes,
-          [generateId()]: {
+          [newNodeId]: {
+            id: newNodeId,
             label: 'P',
             slice: this.state.selectedRange
           }
