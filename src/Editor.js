@@ -27,10 +27,18 @@ class Editor extends Component {
     });
   }
 
-  onNodeSelected = nodeId => {
+  onNodeSelected = (nodeId, multi) => {
+    const curSelection = this.state.selectedNodes;
+    let newSelection;
+    if (multi && curSelection) {
+      newSelection = new Set(curSelection);
+      newSelection.delete(nodeId) || newSelection.add(nodeId);
+    } else {
+      newSelection = new Set([nodeId]);
+    }
     this.setState({
       selectedRange: null,
-      selectedNodes: new Set([nodeId])
+      selectedNodes: newSelection
     })
   }
 

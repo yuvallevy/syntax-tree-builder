@@ -90,7 +90,7 @@ class ViewSvg extends Component {
    * @param event Event that triggered the selection.
    */
   selectNode = (event) => {
-    this.props.onNodeSelected(event.target.id);
+    this.props.onNodeSelected(event.target.id, event.ctrlKey);
   };
 
   renderNodes = () => Object.entries(this.state.positionedNodes || {}).map(
