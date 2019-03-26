@@ -20,11 +20,18 @@ class Editor extends Component {
     this.setState({sentence: newSentence});
   }
 
-  onSelectionChanged = (start, end) => {
+  onTextSelected = (start, end) => {
     this.setState({
       selectedRange: [start, end],
       selectedNodes: null
     });
+  }
+
+  onNodeSelected = nodeId => {
+    this.setState({
+      selectedRange: null,
+      selectedNodes: new Set([nodeId])
+    })
   }
 
   onNodeAdded = () => {
@@ -49,8 +56,10 @@ class Editor extends Component {
         <View
           nodes={this.state.nodes}
           sentence={this.state.sentence}
+          selectedNodes={this.state.selectedNodes}
           onSentenceChanged={this.onSentenceChanged}
-          onSelectionChanged={this.onSelectionChanged}
+          onTextSelected={this.onTextSelected}
+          onNodeSelected={this.onNodeSelected}
         />
         <Controls
           sentence={this.state.sentence}

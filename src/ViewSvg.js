@@ -7,8 +7,7 @@ import './ViewSvg.css';
 
 class ViewSvg extends Component {
   state = {
-    positionedNodes: null,
-    selectedNodeId: null
+    positionedNodes: null
   };
 
   xCache = {};
@@ -91,9 +90,7 @@ class ViewSvg extends Component {
    * @param event Event that triggered the selection.
    */
   selectNode = (event) => {
-    this.setState({
-      selectedNodeId: event.target.id
-    });
+    this.props.onNodeSelected(event.target.id);
   };
 
   renderNodes = () => Object.entries(this.state.positionedNodes || {}).map(
@@ -103,8 +100,9 @@ class ViewSvg extends Component {
         x={node.x} y={node.y}
         textAnchor="middle"
         id={nodeId}
-        className={nodeId === this.state.selectedNodeId ? 'node selected' : 'node'}
-        onClick={this.selectNode}
+        className={this.props.selectedNodes && this.props.selectedNodes.has(nodeId) ? 'node selected' : 'node'}
+        onMouseDown={this.selectNode}
+        onTouchStart={this.selectNode}
       >
         {node.label}
       </text>
@@ -121,7 +119,7 @@ class ViewSvg extends Component {
         y1={node.y + 4}
         x2={child.x}
         y2={child.y - 16}
-      />
+      />;
     }) : []
   );
 

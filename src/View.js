@@ -7,8 +7,8 @@ class View extends Component {
     this.props.onSentenceChanged(event.target.value);
   }
 
-  onSelectionChanged = event => {
-    this.props.onSelectionChanged(event.target.selectionStart, event.target.selectionEnd);
+  onTextSelected = event => {
+    this.props.onTextSelected(event.target.selectionStart, event.target.selectionEnd);
   }
 
   renderInput = () => {
@@ -16,7 +16,7 @@ class View extends Component {
       <input
         type="text" value={this.props.sentence}
         onChange={this.onInputChanged}
-        onSelect={this.onSelectionChanged}
+        onSelect={this.onTextSelected}
       />
     );
   }
@@ -24,7 +24,12 @@ class View extends Component {
   render() {
     return (
       <div className="View">
-        <ViewSvg nodes={this.props.nodes} sentence={this.props.sentence} />
+        <ViewSvg
+          nodes={this.props.nodes}
+          sentence={this.props.sentence}
+          selectedNodes={this.props.selectedNodes}
+          onNodeSelected={this.props.onNodeSelected}
+        />
         {this.renderInput()}
       </div>
     );
