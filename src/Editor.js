@@ -65,6 +65,18 @@ class Editor extends Component {
     }
   }
 
+  onNodeLabelChanged = (nodeId, newValue) => {
+    this.setState({
+      nodes: {
+        ...this.state.nodes,
+        [nodeId]: {
+          ...this.state.nodes[nodeId],
+          label: newValue
+        }
+      }
+    })
+  }
+
   render() {
     return (
       <div className="Editor">
@@ -72,9 +84,11 @@ class Editor extends Component {
           nodes={this.state.nodes}
           sentence={this.state.sentence}
           selectedNodes={this.state.selectedNodes}
+          editingNode={this.state.editingNode}
           onSentenceChanged={this.onSentenceChanged}
           onTextSelected={this.onTextSelected}
           onNodeSelected={this.onNodeSelected}
+          onNodeLabelChanged={this.onNodeLabelChanged}
         />
         <Controls
           sentence={this.state.sentence}

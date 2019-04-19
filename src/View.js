@@ -28,7 +28,9 @@ class View extends Component {
           nodes={this.props.nodes}
           sentence={this.props.sentence}
           selectedNodes={this.props.selectedNodes}
+          editingNode={this.props.editingNode}
           onNodeSelected={this.props.onNodeSelected}
+          onNodeLabelChanged={this.props.onNodeLabelChanged}
         />
         {this.renderInput()}
       </div>

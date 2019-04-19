@@ -96,6 +96,14 @@ class ViewSvg extends Component {
     this.props.onNodeSelected(event.target.id, event.ctrlKey);
   };
 
+  /**
+   * Sets a node's label.
+   * @param event Event that triggered the update.
+   */
+  setNodeLabel = (event) => {
+    this.props.onNodeLabelChanged(event.target.id, event.target.value);
+  }
+
   renderNodes = () => Object.entries(this.state.positionedNodes || {}).map(
     ([nodeId, node]) => (
       <text
@@ -111,6 +119,26 @@ class ViewSvg extends Component {
       </text>
     )
   );
+
+  renderEditingNode = () => {
+    if (!this.state.positionedNodes) { return false; }
+    const node = this.state.positionedNodes[this.props.editingNode];
+    if (node) {
+      return <input
+        type="text"
+        className="node-edit-box"
+        id={node.id}
+        value={node.label}
+        style={{
+          left: node.x,
+          top: node.y,
+          width: 32
+        }}
+        onChange={this.setNodeLabel}
+      />;
+    }
+    return false;
+  }
 
   renderLinks = () => flatMap(Object.values(this.state.positionedNodes || {}),
     node => node.children ? node.children.map(childId => {
@@ -142,11 +170,12 @@ class ViewSvg extends Component {
 
   render() {
     return (
-      <div>
+      <div className="ViewSvg">
         <svg width={measureText(this.props.sentence)} height={200}>
           {this.renderNodes()}
           {this.renderLinks()}
         </svg>
+        {this.props.editingNode && this.renderEditingNode()}
       </div>
     )
   }

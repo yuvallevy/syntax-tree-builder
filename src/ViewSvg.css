@@ -1,3 +1,14 @@
+.ViewSvg {
+  position: relative;
+}
+
+.node-edit-box {
+  position: absolute;
+  background-color: white;
+  border: 1px inset silver;
+  font: inherit;
+}
+
 .tree-link {
   stroke: black;
   stroke-width: 1px;
