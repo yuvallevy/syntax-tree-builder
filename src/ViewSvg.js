@@ -49,7 +49,7 @@ class ViewSvg extends Component {
    * @param  {*}      node Node to position.
    * @return {number}      Node's target Y position.
    */
-  computeNodeY = (node) => node.slice ? 190 : this.computeYByChildren(node.children);
+  computeNodeY = (node) => node.slice ? 178 : this.computeYByChildren(node.children);
 
   /**
    * Returns the X position of the given node and caches the result, or retrieves it if it is already cached.
@@ -109,7 +109,6 @@ class ViewSvg extends Component {
       <text
         key={nodeId}
         x={node.x} y={node.y}
-        textAnchor="middle"
         id={nodeId}
         className={this.props.selectedNodes && this.props.selectedNodes.has(nodeId) ? 'node selected' : 'node'}
         onMouseDown={this.selectNode}
@@ -130,7 +129,7 @@ class ViewSvg extends Component {
         id={node.id}
         value={node.label}
         style={{
-          left: node.x,
+          left: node.x - 16,
           top: node.y,
           width: 32
         }}
@@ -147,9 +146,9 @@ class ViewSvg extends Component {
         key={childId}
         className="tree-link"
         x1={node.x}
-        y1={node.y + 4}
+        y1={node.y + 22}
         x2={child.x}
-        y2={child.y - 16}
+        y2={child.y}
       />;
     }) : []
   );

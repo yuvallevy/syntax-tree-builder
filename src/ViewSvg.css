@@ -2,11 +2,17 @@
   position: relative;
 }
 
+.node {
+  text-anchor: middle;
+  dominant-baseline: text-before-edge;
+}
+
 .node-edit-box {
   position: absolute;
   background-color: white;
   border: 1px inset silver;
   font: inherit;
+  text-align: center;
 }
 
 .tree-link {
