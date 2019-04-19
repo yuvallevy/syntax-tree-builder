@@ -56,7 +56,7 @@ class Editor extends Component {
           ...this.state.nodes,
           [newNodeId]: {
             id: newNodeId,
-            label: 'P',
+            label: '',
             ...nodeDefinition
           }
         },
