@@ -58,7 +58,9 @@ class Editor extends Component {
             label: 'P',
             ...nodeDefinition
           }
-        }
+        },
+        selectedNodes: new Set([newNodeId]),
+        editingNode: newNodeId
       });
     }
   }
