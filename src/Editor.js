@@ -38,7 +38,8 @@ class Editor extends Component {
     }
     this.setState({
       selectedRange: null,
-      selectedNodes: newSelection
+      selectedNodes: newSelection,
+      editingNode: null
     })
   }
 
