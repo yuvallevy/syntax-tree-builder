@@ -78,11 +78,14 @@ class ViewSvg extends Component {
   computeNodePositions = () => {
     this.xCache = {};
     this.yCache = {};
-    return Object.entries(this.props.nodes).map(([id, node]) => ({
-      ...node,
-      x: this.getNodeX(node),
-      y: this.getNodeY(node)
-    }));
+    return Object.entries(this.props.nodes).reduce((positionedNodes, [id, node]) => ({
+      ...positionedNodes,
+      [id]: {
+        ...node,
+        x: this.getNodeX(node),
+        y: this.getNodeY(node)
+      }
+    }), {});
   }
 
   /**
