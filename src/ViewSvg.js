@@ -134,6 +134,7 @@ class ViewSvg extends Component {
           width: 32
         }}
         onChange={this.setNodeLabel}
+        autoFocus={true}
       />;
     }
     return false;
