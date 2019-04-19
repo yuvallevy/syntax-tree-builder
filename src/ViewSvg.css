@@ -11,6 +11,7 @@
   position: absolute;
   background-color: white;
   border: 1px inset silver;
+  padding: 0;
   font: inherit;
   text-align: center;
 }
