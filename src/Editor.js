@@ -43,15 +43,20 @@ class Editor extends Component {
   }
 
   onNodeAdded = () => {
-    if (this.state.selectedRange) {
+    if (this.state.selectedRange || this.state.selectedNodes) {
       const newNodeId = generateId();
+      const nodeDefinition = this.state.selectedRange ? {
+        slice: this.state.selectedRange
+      } : {
+        children: Array.from(this.state.selectedNodes)
+      };
       this.setState({
         nodes: {
           ...this.state.nodes,
           [newNodeId]: {
             id: newNodeId,
             label: 'P',
-            slice: this.state.selectedRange
+            ...nodeDefinition
           }
         }
       });
