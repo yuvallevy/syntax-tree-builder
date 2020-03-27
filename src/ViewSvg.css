@@ -21,6 +21,32 @@
   stroke-width: 1px;
 }
 
-.selected {
-  fill: red;
+.node {
+  cursor: pointer;
+}
+
+.node rect {
+  fill: transparent;
+  stroke: none;
+  shape-rendering: crispEdges;
+}
+
+.node:hover rect {
+  fill: rgba(0, 0, 0, 0.1);
+}
+
+.node.selected rect {
+  stroke: #333;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  animation: 0.5s infinite linear marching-ants;
+}
+
+@keyframes marching-ants {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -8px;
+  }
 }

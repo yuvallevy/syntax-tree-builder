@@ -93,7 +93,7 @@ class ViewSvg extends Component {
    * @param event Event that triggered the selection.
    */
   selectNode = (event) => {
-    this.props.onNodeSelected(event.target.id, event.ctrlKey);
+    this.props.onNodeSelected(event.target.dataset.nodeId, event.ctrlKey);
   };
 
   /**
@@ -101,21 +101,31 @@ class ViewSvg extends Component {
    * @param event Event that triggered the update.
    */
   setNodeLabel = (event) => {
-    this.props.onNodeLabelChanged(event.target.id, event.target.value);
+    this.props.onNodeLabelChanged(event.target.dataset.nodeId, event.target.value);
   }
 
   renderNodes = () => Object.entries(this.state.positionedNodes || {}).map(
     ([nodeId, node]) => (
-      <text
+      <g
         key={nodeId}
-        x={node.x} y={node.y}
-        id={nodeId}
         className={this.props.selectedNodes && this.props.selectedNodes.has(nodeId) ? 'node selected' : 'node'}
-        onMouseDown={this.selectNode}
-        onTouchStart={this.selectNode}
       >
-        {node.label}
-      </text>
+        <rect
+          x={Math.round(node.x - 14)} y={Math.round(node.y)}
+          data-node-id={nodeId}
+          width={28} height={22}
+          onMouseDown={this.selectNode}
+          onTouchStart={this.selectNode}
+        />
+        <text
+          x={node.x} y={node.y}
+          data-node-id={nodeId}
+          onMouseDown={this.selectNode}
+          onTouchStart={this.selectNode}
+        >
+          {node.label}
+        </text>
+      </g>
     )
   );
 
@@ -126,7 +136,7 @@ class ViewSvg extends Component {
       return <input
         type="text"
         className="node-edit-box"
-        id={node.id}
+        data-node-id={node.id}
         value={node.label}
         style={{
           left: node.x - 16,
