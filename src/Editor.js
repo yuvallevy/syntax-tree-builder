@@ -1,59 +1,55 @@
-import React, { Component } from 'react';
+import React, { useReducer } from 'react';
 import View from './View';
 import Controls from './Controls';
-import { SENTENCE } from './examples';
+import { SENTENCE, TREE } from './examples';
 import { generateId } from './utils';
 import './Editor.css';
 
-class Editor extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      nodes: {},
-      sentence: SENTENCE,
-      selectedRange: null,
-      selectedNodes: null
-    };
-  }
+const initialState = {
+  nodes: TREE,
+  sentence: SENTENCE,
+  selectedRange: null,
+  selectedNodes: null,
+  editingNode: null
+};
 
-  onSentenceChanged = newSentence => {
-    this.setState({sentence: newSentence});
-  }
-
-  onTextSelected = (start, end) => {
-    this.setState({
-      selectedRange: [start, end],
-      selectedNodes: null
-    });
-  }
-
-  onNodeSelected = (nodeId, multi) => {
-    const curSelection = this.state.selectedNodes;
-    let newSelection;
-    if (multi && curSelection) {
-      newSelection = new Set(curSelection);
-      newSelection.delete(nodeId) || newSelection.add(nodeId);
-    } else {
-      newSelection = new Set([nodeId]);
-    }
-    this.setState({
-      selectedRange: null,
-      selectedNodes: newSelection,
-      editingNode: null
-    })
-  }
-
-  onNodeAdded = () => {
-    if (this.state.selectedRange || this.state.selectedNodes) {
-      const newNodeId = generateId();
-      const nodeDefinition = this.state.selectedRange ? {
-        slice: this.state.selectedRange
-      } : {
-        children: Array.from(this.state.selectedNodes)
+const reducer = (state, action) => {
+  console.log(action);
+  switch(action.type) {
+    case 'setSentence':
+      return { ...state, sentence: action.newSentence };
+    case 'selectText':
+      return { ...state, selectedRange: [action.start, action.end], selectedNodes: null };
+    case 'selectNode':
+      const curSelection = state.selectedNodes;
+      const { nodeId, multi } = action;
+      let newSelection;
+      if (multi && curSelection) {
+        newSelection = new Set(curSelection);
+        newSelection.delete(nodeId) || newSelection.add(nodeId);
+      } else {
+        newSelection = new Set([nodeId]);
+      }
+      return {
+        ...state,
+        selectedRange: null,
+        selectedNodes: newSelection,
+        editingNode: null
       };
-      this.setState({
+    case 'addNode':
+      if (!state.selectedRange && !state.selectedNodes) {
+        return state;
+      }
+      const newNodeId = generateId();
+      const nodeDefinition = state.selectedRange ? {
+        slice: state.selectedRange
+      } : {
+        children: Array.from(state.selectedNodes)
+      };
+      return {
+        ...state,
         nodes: {
-          ...this.state.nodes,
+          ...state.nodes,
           [newNodeId]: {
             id: newNodeId,
             label: '',
@@ -62,42 +58,51 @@ class Editor extends Component {
         },
         selectedNodes: new Set([newNodeId]),
         editingNode: newNodeId
-      });
-    }
-  }
-
-  onNodeLabelChanged = (nodeId, newValue) => {
-    this.setState({
-      nodes: {
-        ...this.state.nodes,
-        [nodeId]: {
-          ...this.state.nodes[nodeId],
-          label: newValue
+      }
+    case 'setLabel':
+      return {
+        ...state,
+        nodes: {
+          ...state.nodes,
+          [action.nodeId]: {
+            ...state.nodes[action.nodeId],
+            label: action.newValue
+          }
         }
       }
-    })
+    default:
+      return state;
   }
+};
 
-  render() {
-    return (
-      <div className="Editor">
-        <View
-          nodes={this.state.nodes}
-          sentence={this.state.sentence}
-          selectedNodes={this.state.selectedNodes}
-          editingNode={this.state.editingNode}
-          onSentenceChanged={this.onSentenceChanged}
-          onTextSelected={this.onTextSelected}
-          onNodeSelected={this.onNodeSelected}
-          onNodeLabelChanged={this.onNodeLabelChanged}
-        />
-        <Controls
-          sentence={this.state.sentence}
-          onNodeAdded={this.onNodeAdded}
-        />
-      </div>
-    )
-  }
-}
+const Editor = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  console.log(state);
+
+  const onSentenceChanged = (newSentence) => dispatch({ type: 'setSentence', newSentence });
+  const onTextSelected = (start, end) => dispatch({ type: 'selectText', start, end });
+  const onNodeSelected = (nodeId, multi) => dispatch({ type: 'selectNode', nodeId, multi });
+  const onNodeAdded = () => dispatch({ type: 'addNode' });
+  const onNodeLabelChanged = (nodeId, newValue) => dispatch({ type: 'setLabel', nodeId, newValue });
+
+  return (
+    <div className="Editor">
+      <View
+        nodes={state.nodes}
+        sentence={state.sentence}
+        selectedNodes={state.selectedNodes}
+        editingNode={state.editingNode}
+        onSentenceChanged={onSentenceChanged}
+        onTextSelected={onTextSelected}
+        onNodeSelected={onNodeSelected}
+        onNodeLabelChanged={onNodeLabelChanged}
+      />
+      <Controls
+        sentence={state.sentence}
+        onNodeAdded={onNodeAdded}
+      />
+    </div>
+  )
+};
 
 export default Editor;
