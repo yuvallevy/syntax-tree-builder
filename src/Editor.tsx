@@ -1,11 +1,26 @@
 import React, { useReducer } from 'react';
 import View from './View';
 import Controls from './Controls';
+import { NodeId, NodeTree } from './interfaces';
 import { SENTENCE, TREE } from './examples';
 import { generateId } from './utils';
-import './Editor.css';
+import './Editor.scss';
 
-const initialState = {
+interface EditorState {
+  nodes: NodeTree;
+  sentence: string;
+  selectedRange: [number, number] | null;
+  selectedNodes: Set<NodeId> | null;
+  editingNode: NodeId | null;
+}
+
+type EditorAction = { type: 'setSentence'; newSentence: string; }
+  | { type: 'selectText'; start: number; end: number; }
+  | { type: 'selectNode'; nodeId: NodeId, multi: boolean }
+  | { type: 'addNode' }
+  | { type: 'setLabel'; nodeId: NodeId; newValue: string; };
+
+const initialState: EditorState = {
   nodes: TREE,
   sentence: SENTENCE,
   selectedRange: null,
@@ -13,15 +28,15 @@ const initialState = {
   editingNode: null
 };
 
-const reducer = (state, action) => {
+const reducer = (state: EditorState, action: EditorAction): EditorState => {
   console.log(action);
-  switch(action.type) {
+  switch (action.type) {
     case 'setSentence':
       return { ...state, sentence: action.newSentence };
     case 'selectText':
       return { ...state, selectedRange: [action.start, action.end], selectedNodes: null };
     case 'selectNode':
-      const curSelection = state.selectedNodes;
+      const curSelection: Set<NodeId> | null = state.selectedNodes;
       const { nodeId, multi } = action;
       let newSelection;
       if (multi && curSelection) {
@@ -40,12 +55,12 @@ const reducer = (state, action) => {
       if (!state.selectedRange && !state.selectedNodes) {
         return state;
       }
-      const newNodeId = generateId();
+      const newNodeId: string = generateId();
       const nodeDefinition = state.selectedRange ? {
         slice: state.selectedRange
-      } : {
+      } : state.selectedNodes ? {
         children: Array.from(state.selectedNodes)
-      };
+      }: {};
       return {
         ...state,
         nodes: {
@@ -75,15 +90,15 @@ const reducer = (state, action) => {
   }
 };
 
-const Editor = () => {
+const Editor: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   console.log(state);
 
-  const onSentenceChanged = (newSentence) => dispatch({ type: 'setSentence', newSentence });
-  const onTextSelected = (start, end) => dispatch({ type: 'selectText', start, end });
-  const onNodeSelected = (nodeId, multi) => dispatch({ type: 'selectNode', nodeId, multi });
+  const onSentenceChanged = (newSentence: string) => dispatch({ type: 'setSentence', newSentence });
+  const onTextSelected = (start: number, end: number) => dispatch({ type: 'selectText', start, end });
+  const onNodeSelected = (nodeId: NodeId, multi: boolean) => dispatch({ type: 'selectNode', nodeId, multi });
   const onNodeAdded = () => dispatch({ type: 'addNode' });
-  const onNodeLabelChanged = (nodeId, newValue) => dispatch({ type: 'setLabel', nodeId, newValue });
+  const onNodeLabelChanged = (nodeId: NodeId, newValue: string) => dispatch({ type: 'setLabel', nodeId, newValue });
 
   return (
     <div className="Editor">

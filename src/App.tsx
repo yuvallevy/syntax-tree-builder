@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import Editor from './Editor.js';
-import './App.css';
+import Editor from './Editor';
+import './App.scss';
 
 class App extends Component {
   render() {

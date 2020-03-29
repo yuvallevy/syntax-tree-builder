@@ -1,31 +1,31 @@
-const MEASUREMENT_ELEMENT_ID = 'text-measurement';
+const MEASUREMENT_ELEMENT_ID: string = 'text-measurement';
 
-const cache = {};
+const cache: { [str: string]: number } = {};
 
-function getMeasurementElement() {
+function getMeasurementElement(): HTMLElement {
   let el = document.getElementById(MEASUREMENT_ELEMENT_ID);
   if (!el) {
-    const measurementElement = document.createElement('span');
+    const measurementElement: HTMLElement = document.createElement('span');
     measurementElement.id = MEASUREMENT_ELEMENT_ID;
     measurementElement.style.position = 'absolute';
     measurementElement.style.left = '-100%';
     measurementElement.style.top = '-100%';
-    measurementElement.style.padding = 0;
+    measurementElement.style.padding = '0';
     measurementElement.style.whiteSpace = 'pre';
     document.body.appendChild(measurementElement);
-    el = document.getElementById(MEASUREMENT_ELEMENT_ID);
+    el = document.getElementById(MEASUREMENT_ELEMENT_ID) as HTMLElement;
   }
   return el;
 }
 
-export function measureText(str) {
+export function measureText(str: string): number {
   if (cache[str]) {
     return cache[str];
   }
 
   let el = getMeasurementElement();
   el.innerText = str;
-  const width = el.getBoundingClientRect().width;
+  const width: number = el.getBoundingClientRect().width;
   cache[str] = width;
   return width;
 }
