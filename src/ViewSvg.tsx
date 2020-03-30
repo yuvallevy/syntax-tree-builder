@@ -110,27 +110,33 @@ const getNodeY = (nodes: NodeTree, node: NodeData): number => {
   return yCache.get(node.id) || 0;
 };
 
+/**
+ * Returns a copy of the given node tree with computed positions.
+ * @param  {NodeTree}           nodes    Original tree of nodes.
+ * @param  {string}             sentence Sentence to measure against.
+ * @return {PositionedNodeTree}          Tree of nodes with exact positions.
+ */
+const computeNodePositions = (nodes: NodeTree, sentence: string): PositionedNodeTree => {
+  xCache.clear();
+  yCache.clear();
+  return Object.entries(nodes).reduce((positionedNodes, [id, node]) => ({
+    ...positionedNodes,
+    [id]: {
+      ...node,
+      x: getNodeX(nodes, sentence, node),
+      y: getNodeY(nodes, node)
+    }
+  }), {});
+}
+
 const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editingNode, onNodeSelected, onNodeLabelChanged }) => {
   const [positionedNodes, setPositionedNodes] = useState<PositionedNodeTree>({});
   console.log(positionedNodes);
 
   useEffect(() => {
     console.log(nodes);
-    setPositionedNodes(computeNodePositions());
-  }, [nodes]);
-
-  const computeNodePositions = (): PositionedNodeTree => {
-    xCache.clear();
-    yCache.clear();
-    return Object.entries(nodes).reduce((positionedNodes, [id, node]) => ({
-      ...positionedNodes,
-      [id]: {
-        ...node,
-        x: getNodeX(nodes, sentence, node),
-        y: getNodeY(nodes, node)
-      }
-    }), {});
-  }
+    setPositionedNodes(computeNodePositions(nodes, sentence));
+  }, [nodes, sentence]);
 
   /**
    * Sets a node as selected.
