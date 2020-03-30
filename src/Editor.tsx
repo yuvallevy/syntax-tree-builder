@@ -34,7 +34,12 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
     case 'setSentence':
       return { ...state, sentence: action.newSentence };
     case 'selectText':
-      return { ...state, selectedRange: [action.start, action.end], selectedNodes: null };
+      return {
+        ...state,
+        selectedRange: [action.start, action.end],
+        selectedNodes: null,
+        editingNode: null
+      };
     case 'selectNode':
       const curSelection: Set<NodeId> | null = state.selectedNodes;
       const { nodeId, multi } = action;
