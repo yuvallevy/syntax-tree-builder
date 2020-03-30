@@ -21,7 +21,7 @@ class View extends Component<ViewProps, {}> {
 
   onTextSelected = (event: React.SyntheticEvent<HTMLInputElement>): void => {
     const { selectionStart, selectionEnd } = event.currentTarget;
-    if (selectionStart && selectionEnd) {
+    if (selectionStart !== null && selectionEnd !== null) {
       this.props.onTextSelected(selectionStart, selectionEnd);
     }
   }
