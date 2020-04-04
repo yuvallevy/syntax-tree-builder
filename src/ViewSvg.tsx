@@ -150,7 +150,7 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
   const selectNode = (event: React.MouseEvent<SVGElement> | React.TouchEvent<SVGElement>) => {
     const { nodeId } = event.currentTarget.dataset;
     if (nodeId) {
-      onNodeSelected(nodeId, event.ctrlKey);
+      onNodeSelected(nodeId, event.ctrlKey || event.shiftKey);
     }
   };
 
