@@ -17,7 +17,7 @@ interface EditorState {
 type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'selectText'; start: number; end: number; }
   | { type: 'selectNode'; nodeIds: NodeId[], multi: boolean }
-  | { type: 'deselectNodes' }
+  | { type: 'clearSelection' }
   | { type: 'addNode' }
   | { type: 'setLabel'; nodeId: NodeId; newValue: string; };
 
@@ -59,7 +59,7 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
         selectedNodes: newSelection,
         editingNode: null
       };
-    case 'deselectNodes':
+    case 'clearSelection':
       return { ...state, selectedNodes: null, editingNode: null };
     case 'addNode':
       if (!state.selectedRange && !state.selectedNodes) {
@@ -107,7 +107,7 @@ const Editor: React.FC = () => {
   const onSentenceChanged = (newSentence: string) => dispatch({ type: 'setSentence', newSentence });
   const onTextSelected = (start: number, end: number) => dispatch({ type: 'selectText', start, end });
   const onNodesSelected = (nodeIds: NodeId[], multi: boolean) => dispatch({ type: 'selectNode', nodeIds, multi });
-  const onDeselected = () => dispatch({ type: 'deselectNodes' });
+  const onSelectionCleared = () => dispatch({ type: 'clearSelection' });
   const onNodeAdded = () => dispatch({ type: 'addNode' });
   const onNodeLabelChanged = (nodeId: NodeId, newValue: string) => dispatch({ type: 'setLabel', nodeId, newValue });
 
@@ -121,7 +121,7 @@ const Editor: React.FC = () => {
         onSentenceChanged={onSentenceChanged}
         onTextSelected={onTextSelected}
         onNodesSelected={onNodesSelected}
-        onDeselected={onDeselected}
+        onSelectionCleared={onSelectionCleared}
         onNodeLabelChanged={onNodeLabelChanged}
       />
       <Controls

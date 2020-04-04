@@ -11,7 +11,7 @@ interface ViewSvgProps {
   selectedNodes: Set<NodeId> | null;
   editingNode: NodeId | null;
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
-  onDeselected: () => void;
+  onSelectionCleared: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
 }
 
@@ -130,7 +130,7 @@ const computeNodePositions = (nodes: NodeTree, sentence: string): PositionedNode
   }), {});
 }
 
-const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editingNode, onNodesSelected, onDeselected, onNodeLabelChanged }) => {
+const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editingNode, onNodesSelected, onSelectionCleared, onNodeLabelChanged }) => {
   const [positionedNodes, setPositionedNodes] = useState<PositionedNodeTree>({});
   const [selecting, setSelecting] = useState<boolean>(false);
   const [boxSelectionStart, setBoxSelectionStart] = useState<[number, number] | null>();
@@ -175,7 +175,7 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
         x = event.targetTouches[0].clientX - viewSvgRef.current.offsetLeft;
         y = event.targetTouches[0].clientY - viewSvgRef.current.offsetTop;
       }
-      onDeselected();
+      onSelectionCleared();
       setBoxSelectionStart([x, y]);
       setBoxSelectionEnd(null);
       setSelecting(true);
