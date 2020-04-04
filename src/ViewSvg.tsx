@@ -214,7 +214,7 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
   };
 
   const renderNodes = () => Object.entries(positionedNodes).map(
-    ([nodeId, node]) => (
+    ([nodeId, node]) => editingNode !== nodeId && (
       <g
         key={nodeId}
         className={selectedNodes && selectedNodes.has(nodeId) ? 'node selected' : 'node'}
