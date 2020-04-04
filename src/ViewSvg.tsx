@@ -10,7 +10,7 @@ interface ViewSvgProps {
   sentence: string;
   selectedNodes: Set<NodeId> | null;
   editingNode: NodeId | null;
-  onNodeSelected: (nodeId: NodeId, multi: boolean) => void;
+  onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
   onDeselected: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
 }
@@ -130,16 +130,15 @@ const computeNodePositions = (nodes: NodeTree, sentence: string): PositionedNode
   }), {});
 }
 
-const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editingNode, onNodeSelected, onDeselected, onNodeLabelChanged }) => {
+const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editingNode, onNodesSelected, onDeselected, onNodeLabelChanged }) => {
   const [positionedNodes, setPositionedNodes] = useState<PositionedNodeTree>({});
   const [selecting, setSelecting] = useState<boolean>(false);
   const [boxSelectionStart, setBoxSelectionStart] = useState<[number, number] | null>();
   const [boxSelectionEnd, setBoxSelectionEnd] = useState<[number, number] | null>();
   const viewSvgRef = useRef<HTMLDivElement>(null);
-  console.log(positionedNodes);
 
   useEffect(() => {
-    console.log(nodes);
+    console.log('useEffect - nodes, sentence', nodes);
     setPositionedNodes(computeNodePositions(nodes, sentence));
   }, [nodes, sentence]);
 
@@ -150,7 +149,7 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
   const selectNode = (event: React.MouseEvent<SVGElement> | React.TouchEvent<SVGElement>) => {
     const { nodeId } = event.currentTarget.dataset;
     if (nodeId) {
-      onNodeSelected(nodeId, event.ctrlKey || event.shiftKey);
+      onNodesSelected([nodeId], event.ctrlKey || event.shiftKey);
     }
   };
 
@@ -178,7 +177,7 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
       }
       onDeselected();
       setBoxSelectionStart([x, y]);
-      setBoxSelectionEnd([x, y]);
+      setBoxSelectionEnd(null);
       setSelecting(true);
     }
   };
@@ -200,15 +199,18 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
     }
   };
 
-  const finishBoxSelection = () => {
+  const finishBoxSelection = (event: React.MouseEvent<SVGElement> | React.TouchEvent<SVGElement>) => {
     setSelecting(false);
     if (boxSelectionStart && boxSelectionEnd) {
       const x1 = Math.min(boxSelectionStart[0], boxSelectionEnd[0]);
       const y1 = Math.min(boxSelectionStart[1], boxSelectionEnd[1]);
       const x2 = Math.max(boxSelectionStart[0], boxSelectionEnd[0]);
       const y2 = Math.max(boxSelectionStart[1], boxSelectionEnd[1]);
-      console.log(Object.values(positionedNodes)
-        .filter((node) => node.x > x1 && node.x < x2 && node.y > y1 && node.y < y2));
+      onNodesSelected(Object.values(positionedNodes)
+      .filter((node) => node.x > x1 && node.x < x2 && node.y > y1 && node.y < y2)
+      .map((node) => node.id), false);
+      setBoxSelectionStart(null);
+      setBoxSelectionEnd(null);
     }
   };
 

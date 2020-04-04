@@ -16,7 +16,7 @@ interface EditorState {
 
 type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'selectText'; start: number; end: number; }
-  | { type: 'selectNode'; nodeId: NodeId, multi: boolean }
+  | { type: 'selectNode'; nodeIds: NodeId[], multi: boolean }
   | { type: 'deselectNodes' }
   | { type: 'addNode' }
   | { type: 'setLabel'; nodeId: NodeId; newValue: string; };
@@ -43,13 +43,15 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
       };
     case 'selectNode':
       const curSelection: Set<NodeId> | null = state.selectedNodes;
-      const { nodeId, multi } = action;
+      const { nodeIds, multi } = action;
       let newSelection;
       if (multi && curSelection) {
         newSelection = new Set(curSelection);
-        newSelection.delete(nodeId) || newSelection.add(nodeId);
+        for (const nodeId of nodeIds) {
+          newSelection.delete(nodeId) || newSelection.add(nodeId);
+        }
       } else {
-        newSelection = new Set([nodeId]);
+        newSelection = new Set(nodeIds);
       }
       return {
         ...state,
@@ -104,7 +106,7 @@ const Editor: React.FC = () => {
 
   const onSentenceChanged = (newSentence: string) => dispatch({ type: 'setSentence', newSentence });
   const onTextSelected = (start: number, end: number) => dispatch({ type: 'selectText', start, end });
-  const onNodeSelected = (nodeId: NodeId, multi: boolean) => dispatch({ type: 'selectNode', nodeId, multi });
+  const onNodesSelected = (nodeIds: NodeId[], multi: boolean) => dispatch({ type: 'selectNode', nodeIds, multi });
   const onDeselected = () => dispatch({ type: 'deselectNodes' });
   const onNodeAdded = () => dispatch({ type: 'addNode' });
   const onNodeLabelChanged = (nodeId: NodeId, newValue: string) => dispatch({ type: 'setLabel', nodeId, newValue });
@@ -118,7 +120,7 @@ const Editor: React.FC = () => {
         editingNode={state.editingNode}
         onSentenceChanged={onSentenceChanged}
         onTextSelected={onTextSelected}
-        onNodeSelected={onNodeSelected}
+        onNodesSelected={onNodesSelected}
         onDeselected={onDeselected}
         onNodeLabelChanged={onNodeLabelChanged}
       />
