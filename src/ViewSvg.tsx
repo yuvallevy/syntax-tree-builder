@@ -80,7 +80,7 @@ const computeYByChildren = (nodes: NodeTree, children: NodeId[]) =>
  * @param  {NodeData} node  Node to position.
  * @return {number}         Node's target Y position.
  */
-const computeNodeY = (nodes: NodeTree, node: NodeData) => node.slice ? -22
+const computeNodeY = (nodes: NodeTree, node: NodeData) => node.slice ? -40
   : node.children ? computeYByChildren(nodes, node.children)
     : 0;
 
@@ -260,7 +260,14 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
         x2={child.x}
         y2={child.y}
       />;
-    }) : []
+    }) : node.slice ? [<line
+      key={node.slice.join(',')}
+      className="tree-link"
+      x1={node.x}
+      y1={node.y + 22}
+      x2={node.x}
+      y2={node.y + 40}
+    />] : []
   );
 
   const renderEditingNode = (): React.ReactNode => {
