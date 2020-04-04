@@ -11,6 +11,7 @@ interface ViewProps {
   onSentenceChanged: (newSentence: string) => void;
   onTextSelected: (start: number, end: number) => void;
   onNodeSelected: (nodeId: NodeId, multi: boolean) => void;
+  onDeselected: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
 }
 
@@ -45,6 +46,7 @@ class View extends Component<ViewProps, {}> {
           selectedNodes={this.props.selectedNodes}
           editingNode={this.props.editingNode}
           onNodeSelected={this.props.onNodeSelected}
+          onDeselected={this.props.onDeselected}
           onNodeLabelChanged={this.props.onNodeLabelChanged}
         />
         {this.renderInput()}
