@@ -138,7 +138,6 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
   const viewSvgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log('useEffect - nodes, sentence', nodes);
     setPositionedNodes(computeNodePositions(nodes, sentence));
   }, [nodes, sentence]);
 
