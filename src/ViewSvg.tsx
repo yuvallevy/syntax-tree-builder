@@ -18,6 +18,7 @@ interface ViewSvgProps {
 interface PositionedNodeData extends NodeData {
   x: number;
   y: number;
+  sliceXSpan?: [number, number];
 }
 
 interface PositionedNodeTree {
@@ -25,6 +26,7 @@ interface PositionedNodeTree {
 }
 
 type PositionCache = Map<NodeId, number>;
+type SpanCache = Map<NodeId, [number, number]>;
 
 interface ViewSvgState {
   positionedNodes: PositionedNodeTree
@@ -32,6 +34,7 @@ interface ViewSvgState {
 
 const xCache: PositionCache = new Map();
 const yCache: PositionCache = new Map();
+const xSpanCache: SpanCache = new Map();
 
 /**
  * Calculates the X position of a leaf node corresponding to the given sentence slice.
@@ -42,6 +45,16 @@ const yCache: PositionCache = new Map();
  */
 const computeXBySlice = (sentence: string, start: number, end: number): number =>
 measureText(sentence.slice(0, start)) + (measureText(sentence.slice(start, end)) / 2);
+
+/**
+ * Calculates the X positions of the edges of the given sentence slice.
+ * @param  {string} sentence Sentence to measure against.
+ * @param  {number} start    Start position of the slice (inclusive).
+ * @param  {number} end      End position of the slice (exclusive).
+ * @return {number}          Slice start and end X positions.
+ */
+const computeSliceXSpan = (sentence: string, start: number, end: number): [number, number] =>
+  [measureText(sentence.slice(0, start)), measureText(sentence.slice(0, end))];
 
 /**
  * Calculates the X position of a node with the given children.
@@ -99,6 +112,22 @@ const getNodeX = (nodes: NodeTree, sentence: string, node: NodeData): number => 
 };
 
 /**
+ * Returns the X span of the given node and caches the result, or retrieves it if it is already cached.
+ * @param  {string}   sentence Sentence to measure against.
+ * @param  {NodeData} node     Node to operate on.
+ * @return {number}            Node's X span, or null if node has no slice.
+ */
+const getNodeXSpan = (sentence: string, node: NodeData): [number, number] | null => {
+  if (node.slice) {
+    if (!xSpanCache.has(node.id)) {
+      xSpanCache.set(node.id, computeSliceXSpan(sentence, ...node.slice));
+    }
+    return xSpanCache.get(node.id) || [0, 0];
+  }
+  return null;
+};
+
+/**
  * Returns the Y position of the given node and caches the result, or retrieves it if it is already cached.
  * @param  {NodeTree} nodes Tree of nodes.
  * @param  {NodeData} node  Node to position.
@@ -125,7 +154,8 @@ const computeNodePositions = (nodes: NodeTree, sentence: string): PositionedNode
     [id]: {
       ...node,
       x: getNodeX(nodes, sentence, node),
-      y: getNodeY(nodes, node)
+      y: getNodeY(nodes, node),
+      sliceXSpan: getNodeXSpan(sentence, node)
     }
   }), {});
 }
@@ -260,14 +290,22 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
         x2={child.x}
         y2={child.y}
       />;
-    }) : node.slice ? [<line
-      key={node.slice.join(',')}
-      className="tree-link"
-      x1={node.x}
-      y1={node.y + 22}
-      x2={node.x}
-      y2={node.y + 40}
-    />] : []
+    }) : node.slice
+      ? node.triangle && node.sliceXSpan
+        ? <path
+          key={node.slice.join(',')}
+          className="tree-link"
+          d={`M${node.x},${node.y + 22}L${node.sliceXSpan[0]},${node.y + 40}L${node.sliceXSpan[1]},${node.y + 40}Z`}
+        />
+        : <line
+          key={node.slice.join(',')}
+          className="tree-link"
+          x1={node.x}
+          y1={node.y + 22}
+          x2={node.x}
+          y2={node.y + 40}
+        />
+      : []
   );
 
   const renderEditingNode = (): React.ReactNode => {

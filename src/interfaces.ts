@@ -4,6 +4,7 @@ export interface NodeData {
   id: NodeId;
   label: string;
   slice?: [number, number];
+  triangle?: boolean;
   children?: NodeId[];
 }
 
