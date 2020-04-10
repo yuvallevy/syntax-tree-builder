@@ -3,6 +3,7 @@ import View from './View';
 import Controls from './Controls';
 import { NodeId, NodeTree } from './interfaces';
 import { SENTENCE, TREE } from './examples';
+import { without, chain } from 'lodash';
 import { generateId } from './utils';
 import './Editor.scss';
 
@@ -19,6 +20,7 @@ type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'selectNode'; nodeIds: NodeId[]; multi: boolean; }
   | { type: 'clearSelection'; }
   | { type: 'addNode'; }
+  | { type: 'deleteNodes'; }
   | { type: 'setLabel'; nodeId: NodeId; newValue: string; };
 
 const initialState: EditorState = {
@@ -84,6 +86,22 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
         selectedNodes: new Set([newNodeId]),
         editingNode: newNodeId
       }
+    case 'deleteNodes':
+      if (!state.selectedNodes) {
+        return state;
+      }
+      const nodesToDelete = Array.from(state.selectedNodes);
+      return {
+        ...state,
+        nodes: chain(state.nodes)
+          .omit(nodesToDelete)
+          .toPairs()
+          .map(([nodeId, node]) => [nodeId, node.children ? ({
+            ...node,
+            children: without(node.children, ...nodesToDelete)
+          }) : node])
+          .fromPairs().value()
+      }
     case 'setLabel':
       return {
         ...state,
@@ -109,6 +127,7 @@ const Editor: React.FC = () => {
   const onNodesSelected = (nodeIds: NodeId[], multi: boolean) => dispatch({ type: 'selectNode', nodeIds, multi });
   const onSelectionCleared = () => dispatch({ type: 'clearSelection' });
   const onNodeAdded = () => dispatch({ type: 'addNode' });
+  const onNodesDeleted = () => dispatch({ type: 'deleteNodes' })
   const onNodeLabelChanged = (nodeId: NodeId, newValue: string) => dispatch({ type: 'setLabel', nodeId, newValue });
 
   return (
@@ -127,6 +146,7 @@ const Editor: React.FC = () => {
       <Controls
         sentence={state.sentence}
         onNodeAdded={onNodeAdded}
+        onNodesDeleted={onNodesDeleted}
       />
     </div>
   )

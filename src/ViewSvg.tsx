@@ -75,7 +75,7 @@ const computeXByChildren = (nodes: NodeTree, sentence: string, children: NodeId[
  */
 const computeNodeX = (nodes: NodeTree, sentence: string, node: NodeData) =>
   node.slice ? computeXBySlice(sentence, ...node.slice)
-    : node.children ? computeXByChildren(nodes, sentence, node.children)
+    : node.children && node.children.length ? computeXByChildren(nodes, sentence, node.children)
       : 0;
 
 /**
@@ -94,19 +94,23 @@ const computeYByChildren = (nodes: NodeTree, children: NodeId[]) =>
  * @return {number}         Node's target Y position.
  */
 const computeNodeY = (nodes: NodeTree, node: NodeData) => node.slice ? -40
-  : node.children ? computeYByChildren(nodes, node.children)
-    : 0;
+  : node.children && node.children.length ? computeYByChildren(nodes, node.children)
+    : -40;
 
 /**
  * Returns the X position of the given node and caches the result, or retrieves it if it is already cached.
  * @param  {NodeTree} nodes    Tree of nodes.
  * @param  {string}   sentence Sentence to measure against.
  * @param  {NodeData} node     Node to position.
+ * @param  {boolean}  invalidateCache Whether to invalidate the position cache (usually because the data has changed).
  * @return {number}            Node's target X position.
  */
-const getNodeX = (nodes: NodeTree, sentence: string, node: NodeData): number => {
-  if (!xCache.has(node.id)) {
-    xCache.set(node.id, computeNodeX(nodes, sentence, node));
+const getNodeX = (nodes: NodeTree, sentence: string, node: NodeData, invalidateCache: boolean = false): number => {
+  if (invalidateCache || !xCache.has(node.id)) {
+    const targetX = computeNodeX(nodes, sentence, node);
+    if (targetX) {
+      xCache.set(node.id, targetX);
+    }
   }
   return xCache.get(node.id) || 0;
 };
@@ -115,11 +119,12 @@ const getNodeX = (nodes: NodeTree, sentence: string, node: NodeData): number => 
  * Returns the X span of the given node and caches the result, or retrieves it if it is already cached.
  * @param  {string}   sentence Sentence to measure against.
  * @param  {NodeData} node     Node to operate on.
+ * @param  {boolean}  invalidateCache Whether to invalidate the position cache (usually because the data has changed).
  * @return {number}            Node's X span, or null if node has no slice.
  */
-const getNodeXSpan = (sentence: string, node: NodeData): [number, number] | null => {
+const getNodeXSpan = (sentence: string, node: NodeData, invalidateCache: boolean = false): [number, number] | null => {
   if (node.slice) {
-    if (!xSpanCache.has(node.id)) {
+    if (invalidateCache || !xSpanCache.has(node.id)) {
       xSpanCache.set(node.id, computeSliceXSpan(sentence, ...node.slice));
     }
     return xSpanCache.get(node.id) || [0, 0];
@@ -131,10 +136,11 @@ const getNodeXSpan = (sentence: string, node: NodeData): [number, number] | null
  * Returns the Y position of the given node and caches the result, or retrieves it if it is already cached.
  * @param  {NodeTree} nodes Tree of nodes.
  * @param  {NodeData} node  Node to position.
+ * @param  {boolean}  invalidateCache Whether to invalidate the position cache (usually because the data has changed).
  * @return {number}         Node's target Y position.
  */
-const getNodeY = (nodes: NodeTree, node: NodeData): number => {
-  if (!yCache.has(node.id)) {
+const getNodeY = (nodes: NodeTree, node: NodeData, invalidateCache: boolean = false): number => {
+  if (invalidateCache || !yCache.has(node.id)) {
     yCache.set(node.id, computeNodeY(nodes, node));
   }
   return yCache.get(node.id) || 0;
@@ -147,15 +153,13 @@ const getNodeY = (nodes: NodeTree, node: NodeData): number => {
  * @return {PositionedNodeTree}          Tree of nodes with exact positions.
  */
 const computeNodePositions = (nodes: NodeTree, sentence: string): PositionedNodeTree => {
-  xCache.clear();
-  yCache.clear();
   return Object.entries(nodes).reduce((positionedNodes, [id, node]) => ({
     ...positionedNodes,
     [id]: {
       ...node,
-      x: getNodeX(nodes, sentence, node),
-      y: getNodeY(nodes, node),
-      sliceXSpan: getNodeXSpan(sentence, node)
+      x: getNodeX(nodes, sentence, node, true),
+      y: getNodeY(nodes, node, true),
+      sliceXSpan: getNodeXSpan(sentence, node, true)
     }
   }), {});
 }
