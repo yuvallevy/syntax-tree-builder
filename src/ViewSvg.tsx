@@ -177,9 +177,9 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
   const viewSvgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const positionedNodes = computeNodePositions(nodes, sentence);
-    setPositionedNodes(positionedNodes);
-    setTreeHeight(computeTreeHeight(positionedNodes));
+    const newPositionedNodes = computeNodePositions(nodes, sentence);
+    setPositionedNodes(newPositionedNodes);
+    setTreeHeight(computeTreeHeight(newPositionedNodes));
   }, [nodes, sentence]);
 
   /**
