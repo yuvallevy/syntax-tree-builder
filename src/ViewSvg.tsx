@@ -44,7 +44,7 @@ const xSpanCache: SpanCache = new Map();
  * @return {number}          Node's target X position.
  */
 const computeXBySlice = (sentence: string, start: number, end: number): number =>
-measureText(sentence.slice(0, start)) + (measureText(sentence.slice(start, end)) / 2);
+  measureText(sentence.slice(0, start)) + (measureText(sentence.slice(start, end)) / 2);
 
 /**
  * Calculates the X positions of the edges of the given sentence slice.
