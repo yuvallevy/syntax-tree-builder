@@ -16,9 +16,9 @@ interface EditorState {
 
 type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'selectText'; start: number; end: number; }
-  | { type: 'selectNode'; nodeIds: NodeId[], multi: boolean }
-  | { type: 'clearSelection' }
-  | { type: 'addNode' }
+  | { type: 'selectNode'; nodeIds: NodeId[]; multi: boolean; }
+  | { type: 'clearSelection'; }
+  | { type: 'addNode'; }
   | { type: 'setLabel'; nodeId: NodeId; newValue: string; };
 
 const initialState: EditorState = {
