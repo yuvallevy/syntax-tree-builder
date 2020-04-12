@@ -20,6 +20,7 @@ type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'selectNode'; nodeIds: NodeId[]; multi: boolean; }
   | { type: 'clearSelection'; }
   | { type: 'addNode'; }
+  | { type: 'editNode'; }
   | { type: 'deleteNodes'; }
   | { type: 'setLabel'; nodeId: NodeId; newValue: string; };
 
@@ -86,6 +87,14 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
         selectedNodes: new Set([newNodeId]),
         editingNode: newNodeId
       }
+    case 'editNode':
+      if (!state.selectedNodes) {
+        return state;
+      }
+      return {
+        ...state,
+        editingNode: Array.from(state.selectedNodes).pop() || null
+      }
     case 'deleteNodes':
       if (!state.selectedNodes) {
         return state;
@@ -127,6 +136,7 @@ const Editor: React.FC = () => {
   const onNodesSelected = (nodeIds: NodeId[], multi: boolean) => dispatch({ type: 'selectNode', nodeIds, multi });
   const onSelectionCleared = () => dispatch({ type: 'clearSelection' });
   const onNodeAdded = () => dispatch({ type: 'addNode' });
+  const onEnterEditMode = () => dispatch({ type: 'editNode' });
   const onNodesDeleted = () => dispatch({ type: 'deleteNodes' })
   const onNodeLabelChanged = (nodeId: NodeId, newValue: string) => dispatch({ type: 'setLabel', nodeId, newValue });
 
@@ -146,6 +156,7 @@ const Editor: React.FC = () => {
       <Controls
         sentence={state.sentence}
         onNodeAdded={onNodeAdded}
+        onEnterEditMode={onEnterEditMode}
         onNodesDeleted={onNodesDeleted}
       />
     </div>
