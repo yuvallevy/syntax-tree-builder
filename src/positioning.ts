@@ -1,6 +1,6 @@
 import { NodeId, NodeTree, NodeData, PositionedNodeTree } from './interfaces';
 import { measureText } from './measureText';
-import { avg } from './utils';
+import { mean } from 'lodash';
 
 type PositionCache = Map<NodeId, number>;
 type SpanCache = Map<NodeId, [number, number]>;
@@ -42,7 +42,7 @@ const computeSliceXSpan = (sentence: string, start: number, end: number): [numbe
  * @return {number}            Node's target X position.
  */
 const computeXByChildren = (nodes: NodeTree, sentence: string, children: NodeId[]) =>
-  avg(children.map(childId => getNodeX(nodes, sentence, nodes[childId])));
+  mean(children.map(childId => getNodeX(nodes, sentence, nodes[childId])));
 
 /**
  * Calculates the X position of the given node.
