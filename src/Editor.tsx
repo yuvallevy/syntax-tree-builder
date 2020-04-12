@@ -4,7 +4,7 @@ import Controls from './Controls';
 import { NodeId, NodeTree } from './interfaces';
 import { SENTENCE, TREE } from './examples';
 import { without, chain } from 'lodash';
-import { generateId } from './utils';
+import generateId from './generateId';
 import './Editor.scss';
 
 interface EditorState {
