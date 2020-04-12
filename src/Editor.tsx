@@ -22,6 +22,7 @@ type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'addNode'; }
   | { type: 'editNode'; }
   | { type: 'deleteNodes'; }
+  | { type: 'toggleTriangle'; newValue: boolean; }
   | { type: 'setLabel'; nodeId: NodeId; newValue: string; };
 
 const initialState: EditorState = {
@@ -102,6 +103,7 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
       const nodesToDelete = Array.from(state.selectedNodes);
       return {
         ...state,
+        selectedNodes: null,
         nodes: chain(state.nodes)
           .omit(nodesToDelete)
           .toPairs()
@@ -110,6 +112,21 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
             children: without(node.children, ...nodesToDelete)
           }) : node])
           .fromPairs().value()
+      }
+    case 'toggleTriangle':
+      if (!state.selectedNodes) {
+        return state;
+      }
+      const nodesToToggleTriangle = Array.from(state.selectedNodes);
+      return {
+        ...state,
+        nodes: {
+          ...state.nodes,
+          ...Object.fromEntries(nodesToToggleTriangle.map(nodeId => [nodeId, {
+            ...state.nodes[nodeId],
+            triangle: action.newValue
+          }]))
+        }
       }
     case 'setLabel':
       return {
@@ -138,6 +155,7 @@ const Editor: React.FC = () => {
   const onNodeAdded = () => dispatch({ type: 'addNode' });
   const onEnterEditMode = () => dispatch({ type: 'editNode' });
   const onNodesDeleted = () => dispatch({ type: 'deleteNodes' })
+  const onTriangleToggled = (newValue: boolean) => dispatch({ type: 'toggleTriangle', newValue })
   const onNodeLabelChanged = (nodeId: NodeId, newValue: string) => dispatch({ type: 'setLabel', nodeId, newValue });
 
   return (
@@ -154,10 +172,13 @@ const Editor: React.FC = () => {
         onNodeLabelChanged={onNodeLabelChanged}
       />
       <Controls
+        nodes={state.nodes}
         sentence={state.sentence}
+        selectedNodes={state.selectedNodes}
         onNodeAdded={onNodeAdded}
         onEnterEditMode={onEnterEditMode}
         onNodesDeleted={onNodesDeleted}
+        onTriangleToggled={onTriangleToggled}
       />
     </div>
   )
