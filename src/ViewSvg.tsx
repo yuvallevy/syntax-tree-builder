@@ -1,9 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { measureText } from './measureText';
-import { avg } from './utils';
+import { avg, svgPathD } from './utils';
 import { flatMap } from 'lodash';
 import { NodeTree, NodeData, NodeId } from './interfaces';
 import './ViewSvg.scss';
+
+const LABEL_WIDTH = 28
+const LABEL_HEIGHT = 22
+const EDIT_TEXT_BOX_WIDTH = 32
+const LEVEL_HEIGHT = 40
 
 interface ViewSvgProps {
   nodes: NodeTree;
@@ -85,7 +90,7 @@ const computeNodeX = (nodes: NodeTree, sentence: string, node: NodeData) =>
  * @return {number}            Node's target Y position.
  */
 const computeYByChildren = (nodes: NodeTree, children: NodeId[]) =>
-  Math.min(...children.map(childId => getNodeY(nodes, nodes[childId]))) - 40;
+  Math.min(...children.map(childId => getNodeY(nodes, nodes[childId]))) - LEVEL_HEIGHT;
 
 /**
  * Calculates the Y position of the given node.
@@ -93,9 +98,9 @@ const computeYByChildren = (nodes: NodeTree, children: NodeId[]) =>
  * @param  {NodeData} node  Node to position.
  * @return {number}         Node's target Y position.
  */
-const computeNodeY = (nodes: NodeTree, node: NodeData) => node.slice ? -40
+const computeNodeY = (nodes: NodeTree, node: NodeData) => node.slice ? -LEVEL_HEIGHT
   : node.children && node.children.length ? computeYByChildren(nodes, node.children)
-    : -40;
+    : -LEVEL_HEIGHT;
 
 /**
  * Returns the X position of the given node and caches the result, or retrieves it if it is already cached.
@@ -171,6 +176,43 @@ const computeNodePositions = (nodes: NodeTree, sentence: string): PositionedNode
  */
 const computeTreeHeight = (positionedNodes: PositionedNodeTree): number =>
   -Math.min(...Object.values(positionedNodes).map(node => node.y))
+
+/**
+ * Renders a line from the given parent node to the given child node.
+ */
+const lineToChild = (parent: PositionedNodeData, child: PositionedNodeData) => <line
+  key={child.id}
+  className="tree-link"
+  x1={parent.x}
+  y1={parent.y + LABEL_HEIGHT}
+  x2={child.x}
+  y2={child.y}
+/>;
+
+/**
+ * Renders a triangle between a leaf node and a slice.
+ */
+const triangleToSlice = (node: PositionedNodeData) => node.slice && node.sliceXSpan && <path
+  key={node.slice.join(',')}
+  className="tree-link"
+  d={svgPathD(
+    [node.x, node.y + LABEL_HEIGHT],
+    [node.sliceXSpan[0], node.y + LEVEL_HEIGHT],
+    [node.sliceXSpan[1], node.y + LEVEL_HEIGHT]
+  )}
+/>
+
+/**
+ * Renders a line between a leaf node and a slice.
+ */
+const lineToSlice = (node: PositionedNodeData) => node.slice && <line
+  key={node.slice.join(',')}
+  className="tree-link"
+  x1={node.x}
+  y1={node.y + LABEL_HEIGHT}
+  x2={node.x}
+  y2={node.y + LEVEL_HEIGHT}
+/>
 
 const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editingNode, onNodesSelected, onSelectionCleared, onNodeLabelChanged }) => {
   const [positionedNodes, setPositionedNodes] = useState<PositionedNodeTree>({});
@@ -251,8 +293,8 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
       const x2 = Math.max(boxSelectionStart[0], boxSelectionEnd[0]);
       const y2 = Math.max(boxSelectionStart[1], boxSelectionEnd[1]);
       onNodesSelected(Object.values(positionedNodes)
-      .filter((node) => node.x > x1 && node.x < x2 && node.y > y1 && node.y < y2)
-      .map((node) => node.id), false);
+        .filter((node) => node.x > x1 && node.x < x2 && node.y > y1 && node.y < y2)
+        .map((node) => node.id), false);
       setBoxSelectionStart(null);
       setBoxSelectionEnd(null);
     }
@@ -265,9 +307,9 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
         className={selectedNodes && selectedNodes.has(nodeId) ? 'node selected' : 'node'}
       >
         <rect
-          x={Math.round(node.x - 14)} y={Math.round(node.y)}
+          x={Math.round(node.x - (LABEL_WIDTH / 2))} y={Math.round(node.y)}
           data-node-id={nodeId}
-          width={28} height={22}
+          width={LABEL_WIDTH} height={LABEL_HEIGHT}
           onMouseDown={selectNode}
           onTouchStart={selectNode}
         />
@@ -284,32 +326,9 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
   );
 
   const renderLinks = () => flatMap(Object.values(positionedNodes),
-    (node: PositionedNodeData) => node.children ? node.children.map(childId => {
-      const child: PositionedNodeData = positionedNodes[childId];
-      return <line
-        key={childId}
-        className="tree-link"
-        x1={node.x}
-        y1={node.y + 22}
-        x2={child.x}
-        y2={child.y}
-      />;
-    }) : node.slice
-      ? node.triangle && node.sliceXSpan
-        ? <path
-          key={node.slice.join(',')}
-          className="tree-link"
-          d={`M${node.x},${node.y + 22}L${node.sliceXSpan[0]},${node.y + 40}L${node.sliceXSpan[1]},${node.y + 40}Z`}
-        />
-        : <line
-          key={node.slice.join(',')}
-          className="tree-link"
-          x1={node.x}
-          y1={node.y + 22}
-          x2={node.x}
-          y2={node.y + 40}
-        />
-      : []
+    (node: PositionedNodeData) => node.children
+      ? node.children.map(childId => lineToChild(node, positionedNodes[childId]))
+      : node.triangle ? triangleToSlice(node) : lineToSlice(node)
   );
 
   const renderEditingNode = (): React.ReactNode => {
@@ -320,9 +339,9 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
       data-node-id={node.id}
       value={node.label}
       style={{
-        left: node.x - 16,
+        left: node.x - (EDIT_TEXT_BOX_WIDTH / 2),
         top: node.y + treeHeight,
-        width: 32
+        width: EDIT_TEXT_BOX_WIDTH
       }}
       onChange={setNodeLabel}
       autoFocus={true}
@@ -331,13 +350,13 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
 
   const renderSelectionBox = (): React.ReactNode => {
     if (selecting && boxSelectionStart && boxSelectionEnd) {
-      const x1 = Math.min(boxSelectionStart[0], boxSelectionEnd[0]);
-      const y1 = Math.min(boxSelectionStart[1], boxSelectionEnd[1]);
-      const x2 = Math.max(boxSelectionStart[0], boxSelectionEnd[0]);
-      const y2 = Math.max(boxSelectionStart[1], boxSelectionEnd[1]);
-      const width = x2 - x1;
-      const height = y2 - y1;
-      return <rect className="selection-box" x={x1} y={y1} width={width} height={height} />
+      const [x1, y1] = boxSelectionStart;
+      const [x2, y2] = boxSelectionEnd;
+      return <rect
+        className="selection-box"
+        x={Math.min(x1, x2)} y={Math.min(y1, y2)}
+        width={Math.abs(x2 - x1)} height={Math.abs(y2 - y1)}
+      />
     }
     return false;
   };
