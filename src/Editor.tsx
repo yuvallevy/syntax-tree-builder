@@ -71,7 +71,8 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
       }
       const newNodeId: string = generateId();
       const nodeDefinition = state.selectedRange ? {
-        slice: state.selectedRange
+        slice: state.selectedRange,
+        triangle: state.sentence.substring(...state.selectedRange).trim().includes(' ')
       } : state.selectedNodes ? {
         children: Array.from(state.selectedNodes)
       }: {};
