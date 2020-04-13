@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ViewSvg from './ViewSvg';
+import { isEmpty } from 'lodash';
 import { NodeTree, NodeId } from './interfaces';
 import './View.scss';
 
@@ -31,6 +32,7 @@ class View extends Component<ViewProps, {}> {
     return (
       <input
         type="text" value={this.props.sentence}
+        placeholder="Begin by typing a sentence here..."
         onChange={this.onInputChanged}
         onSelect={this.onTextSelected}
       />
@@ -40,7 +42,7 @@ class View extends Component<ViewProps, {}> {
   render() {
     return (
       <div className="View">
-        <ViewSvg
+        {!isEmpty(this.props.nodes) && <ViewSvg
           nodes={this.props.nodes}
           sentence={this.props.sentence}
           selectedNodes={this.props.selectedNodes}
@@ -48,7 +50,7 @@ class View extends Component<ViewProps, {}> {
           onNodesSelected={this.props.onNodesSelected}
           onSelectionCleared={this.props.onSelectionCleared}
           onNodeLabelChanged={this.props.onNodeLabelChanged}
-        />
+        />}
         {this.renderInput()}
       </div>
     );
