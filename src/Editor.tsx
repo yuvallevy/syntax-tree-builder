@@ -187,6 +187,15 @@ const Editor: React.FC = () => {
 
   return (
     <div className="Editor">
+      <Controls
+        nodes={state.nodes}
+        sentence={state.sentence}
+        selectedNodes={state.selectedNodes}
+        onNodeAdded={onNodeAdded}
+        onEnterEditMode={onEnterEditMode}
+        onNodesDeleted={onNodesDeleted}
+        onTriangleToggled={onTriangleToggled}
+      />
       <View
         nodes={state.nodes}
         sentence={state.sentence}
@@ -197,15 +206,6 @@ const Editor: React.FC = () => {
         onNodesSelected={onNodesSelected}
         onSelectionCleared={onSelectionCleared}
         onNodeLabelChanged={onNodeLabelChanged}
-      />
-      <Controls
-        nodes={state.nodes}
-        sentence={state.sentence}
-        selectedNodes={state.selectedNodes}
-        onNodeAdded={onNodeAdded}
-        onEnterEditMode={onEnterEditMode}
-        onNodesDeleted={onNodesDeleted}
-        onTriangleToggled={onTriangleToggled}
       />
     </div>
   )
