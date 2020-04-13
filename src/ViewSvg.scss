@@ -1,3 +1,5 @@
+$active-edit-box-color: #62b0f4;
+
 .ViewSvg {
   position: relative;
 }
@@ -10,10 +12,12 @@
 .node-edit-box {
   position: absolute;
   background-color: white;
-  border: 1px inset silver;
+  border: 1px solid $active-edit-box-color;
+  box-shadow: 0 0 4px $active-edit-box-color;
   padding: 0;
   font: inherit;
   text-align: center;
+  outline: none !important;
 }
 
 .tree-link {
