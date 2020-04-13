@@ -33,6 +33,38 @@ const initialState: EditorState = {
   editingNode: null
 };
 
+const deriveNodeDefinition = (sentence: string, selectedNodes: Set<NodeId> | null, selectedRange: [number, number] | null) => {
+  if (selectedNodes) {
+    return {
+      children: Array.from(selectedNodes)
+    };
+  }
+  if (selectedRange) {
+    // Do some magic to find out what the user actually wants:
+    let desiredRange: [number, number];
+    // 1. If there is only a cursor, treat the entire word as selected
+    if (selectedRange[0] === selectedRange[1]) {
+      desiredRange = [
+        sentence.substring(0, selectedRange[0]).lastIndexOf(' ') + 1,
+        sentence.indexOf(' ', selectedRange[0])
+      ]
+    } else {
+      // 2. Otherwise, trim whitespace from both ends of the selection
+      const originalSelectionText = sentence.substring(...selectedRange);
+      const trimStartCount = originalSelectionText.length - originalSelectionText.trimStart().length;
+      const trimEndCount = originalSelectionText.length - originalSelectionText.trimEnd().length;
+      desiredRange = [
+        selectedRange[0] + trimStartCount,
+        selectedRange[1] - trimEndCount
+      ];
+    }
+    return {
+      slice: desiredRange,
+      triangle: sentence.substring(...desiredRange).includes(' ')
+    };
+  }
+};
+
 const reducer = (state: EditorState, action: EditorAction): EditorState => {
   console.log(action);
   switch (action.type) {
@@ -70,12 +102,6 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
         return state;
       }
       const newNodeId: string = generateId();
-      const nodeDefinition = state.selectedRange ? {
-        slice: state.selectedRange,
-        triangle: state.sentence.substring(...state.selectedRange).trim().includes(' ')
-      } : state.selectedNodes ? {
-        children: Array.from(state.selectedNodes)
-      }: {};
       return {
         ...state,
         nodes: {
@@ -83,7 +109,7 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
           [newNodeId]: {
             id: newNodeId,
             label: '',
-            ...nodeDefinition
+            ...deriveNodeDefinition(state.sentence, state.selectedNodes, state.selectedRange)
           }
         },
         selectedNodes: new Set([newNodeId]),
