@@ -32,7 +32,7 @@ class View extends Component<ViewProps, {}> {
     return (
       <input
         type="text" value={this.props.sentence}
-        placeholder="Begin by typing a sentence here..."
+        placeholder="Click here and type a sentence..."
         onChange={this.onInputChanged}
         onSelect={this.onTextSelected}
       />
