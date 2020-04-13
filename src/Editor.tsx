@@ -46,7 +46,9 @@ const deriveNodeDefinition = (sentence: string, selectedNodes: Set<NodeId> | nul
     if (selectedRange[0] === selectedRange[1]) {
       desiredRange = [
         sentence.substring(0, selectedRange[0]).lastIndexOf(' ') + 1,
-        sentence.indexOf(' ', selectedRange[0])
+        sentence.substring(selectedRange[0]).includes(' ')
+          ? sentence.indexOf(' ', selectedRange[0])
+          : sentence.length
       ]
     } else {
       // 2. Otherwise, trim whitespace from both ends of the selection
