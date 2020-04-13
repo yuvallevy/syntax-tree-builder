@@ -2,10 +2,8 @@ $active-color: #1080f0;
 $disabled-color: rgba(0, 0, 0, 0.333);
 
 .Controls {
-  flex-basis: 32px;
   display: flex;
   flex-direction: row;
-  line-height: 32px;
   background-color: #fafafa;
   border-bottom: 1px solid #eee;
   button {
