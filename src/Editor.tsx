@@ -26,8 +26,8 @@ type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'setLabel'; nodeId: NodeId; newValue: string; };
 
 const initialState: EditorState = {
-  nodes: TREE,
-  sentence: SENTENCE,
+  nodes: {},
+  sentence: '',
   selectedRange: null,
   selectedNodes: null,
   editingNode: null
