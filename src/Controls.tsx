@@ -6,6 +6,7 @@ import './Controls.scss';
 interface ControlsProps {
   nodes: NodeTree;
   sentence: string;
+  selectedRange: [number, number] | null;
   selectedNodes: Set<NodeId> | null;
   onNodeAdded: () => void;
   onEnterEditMode: () => void;
@@ -13,13 +14,13 @@ interface ControlsProps {
   onTriangleToggled: (newValue: boolean) => void;
 }
 
-const Controls: React.FC<ControlsProps> = ({ nodes, selectedNodes, onNodeAdded, onEnterEditMode, onNodesDeleted, onTriangleToggled }) => {
+const Controls: React.FC<ControlsProps> = ({ nodes, selectedRange, selectedNodes, onNodeAdded, onEnterEditMode, onNodesDeleted, onTriangleToggled }) => {
   const triangleToggleEnabled: boolean = !!selectedNodes && !!selectedNodes.size && Array.from(selectedNodes).every(nodeId => nodes[nodeId].slice);
   const triangleToggleChecked: boolean = triangleToggleEnabled && Array.from(selectedNodes as Set<NodeId>).some(nodeId => nodes[nodeId].triangle);
 
   return (
     <div className="Controls">
-      <button type="button" onClick={onNodeAdded} disabled={!selectedNodes || !selectedNodes.size}>
+      <button type="button" onClick={onNodeAdded} disabled={!selectedRange && (!selectedNodes || !selectedNodes.size)}>
         <Plus />
       </button>
       <button type="button" onClick={onEnterEditMode} disabled={!selectedNodes || !selectedNodes.size}>

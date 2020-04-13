@@ -73,7 +73,7 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
     case 'selectText':
       return {
         ...state,
-        selectedRange: [action.start, action.end],
+        selectedRange: state.sentence ? [action.start, action.end] : null,
         selectedNodes: null,
         editingNode: null
       };
@@ -190,6 +190,7 @@ const Editor: React.FC = () => {
       <Controls
         nodes={state.nodes}
         sentence={state.sentence}
+        selectedRange={state.selectedRange}
         selectedNodes={state.selectedNodes}
         onNodeAdded={onNodeAdded}
         onEnterEditMode={onEnterEditMode}
