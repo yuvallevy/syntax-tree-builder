@@ -1,5 +1,6 @@
 import React from 'react';
 import { NodeId, NodeTree } from './interfaces';
+import { Plus, Edit, Trash, CaretTop } from 'react-bytesize-icons';
 import './Controls.scss';
 
 interface ControlsProps {
@@ -18,21 +19,23 @@ const Controls: React.FC<ControlsProps> = ({ nodes, selectedNodes, onNodeAdded, 
 
   return (
     <div className="Controls">
-      <button type="button" onClick={onNodeAdded}>
-        New Node
+      <button type="button" onClick={onNodeAdded} disabled={!selectedNodes || !selectedNodes.size}>
+        <Plus />
       </button>
-      <button type="button" onClick={onEnterEditMode}>
-        Edit Selected Node
+      <button type="button" onClick={onEnterEditMode} disabled={!selectedNodes || !selectedNodes.size}>
+        <Edit />
       </button>
-      <button type="button" onClick={onNodesDeleted}>
-        Delete Selected Nodes
+      <button type="button" onClick={onNodesDeleted} disabled={!selectedNodes || !selectedNodes.size}>
+        <Trash />
       </button>
-      <label htmlFor="triangle-checkbox">
-        <input type="checkbox" id="triangle-checkbox"
-          disabled={!triangleToggleEnabled} checked={triangleToggleChecked}
-          onChange={(event) => onTriangleToggled(event.currentTarget.checked)} />
-        Triangle
-      </label>
+      <button disabled={!triangleToggleEnabled}>
+        <label>
+          <input type="checkbox"
+            disabled={!triangleToggleEnabled} checked={triangleToggleChecked}
+            onChange={(event) => onTriangleToggled(event.currentTarget.checked)} />
+          <CaretTop />
+        </label>
+      </button>
     </div>
   );
 };

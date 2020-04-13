@@ -1,6 +1,55 @@
+$active-color: #1080f0;
+$disabled-color: rgba(0, 0, 0, 0.333);
+
 .Controls {
   flex-basis: 32px;
   display: flex;
   flex-direction: row;
   line-height: 32px;
+  background-color: #fafafa;
+  border-bottom: 1px solid #eee;
+  button {
+    background-color: transparent;
+    border: none;
+    width: 32px;
+    height: 32px;
+    margin: 2px;
+    padding: 0;
+    &:focus {
+      outline: none;
+    }
+    &:not(:disabled):hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    &:not(:disabled):active {
+      background-color: rgba(0, 0, 0, 0.1);
+      svg {
+        color: $active-color;
+        stroke-width: 2px;
+      }
+    }
+    &:disabled {
+      color: $disabled-color;
+      svg {
+        stroke-width: 1.5px;
+      }
+    }
+  }
+  button input[type=checkbox] {
+    visibility: hidden;
+    width: 0;
+    margin: 0;
+    &:checked ~ svg {
+      color: $active-color;
+      stroke-width: 2px;
+    }
+  }
+  svg {
+    stroke-width: 1px;
+    width: 24px;
+    height: 24px;
+    &#i-plus {
+      transform: translate(0.5px, 0.5px);
+    }
+  }
 }
