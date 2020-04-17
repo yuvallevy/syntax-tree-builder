@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { measureText } from './measureText';
 import { flatMap } from 'lodash';
 import { NodeTree, NodeId, PositionedNodeTree, PositionedNodeData } from './interfaces';
-import { computeNodePositions, computeTreeHeight, LABEL_WIDTH, LABEL_HEIGHT, LEVEL_HEIGHT, EDIT_TEXT_BOX_WIDTH } from './positioning';
+import { LABEL_WIDTH, LABEL_HEIGHT, LEVEL_HEIGHT, EDIT_TEXT_BOX_WIDTH } from './positioning';
 import './ViewSvg.scss';
 
 interface ViewSvgProps {
@@ -10,6 +10,8 @@ interface ViewSvgProps {
   sentence: string;
   selectedNodes: Set<NodeId> | null;
   editingNode: NodeId | null;
+  positionedNodes: PositionedNodeTree;
+  treeHeight: number;
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
   onSelectionCleared: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
@@ -58,20 +60,10 @@ const lineToSlice = (node: PositionedNodeData) => node.slice && <line
   y2={node.y + LEVEL_HEIGHT}
 />
 
-const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editingNode, onNodesSelected, onSelectionCleared, onNodeLabelChanged }) => {
-  const [positionedNodes, setPositionedNodes] = useState<PositionedNodeTree>({});
-  const [treeHeight, setTreeHeight] = useState<number>(0);
-  const [selecting, setSelecting] = useState<boolean>(false);
-  const [boxSelectionStart, setBoxSelectionStart] = useState<[number, number] | null>();
-  const [boxSelectionEnd, setBoxSelectionEnd] = useState<[number, number] | null>();
-  const viewSvgRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const newPositionedNodes = computeNodePositions(nodes, sentence);
-    setPositionedNodes(newPositionedNodes);
-    setTreeHeight(computeTreeHeight(newPositionedNodes));
-  }, [nodes, sentence]);
-
+const ViewSvg: React.FC<ViewSvgProps> = ({
+  nodes, sentence, selectedNodes, editingNode, positionedNodes, treeHeight,
+  onNodesSelected, onSelectionCleared, onNodeLabelChanged
+}) => {
   /**
    * Sets a node as selected.
    * @param event Event that triggered the selection.
@@ -93,56 +85,6 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
       onNodeLabelChanged(nodeId, event.currentTarget.value);
     }
   }
-
-  const initiateBoxSelection = (event: React.MouseEvent<SVGElement> | React.TouchEvent<SVGElement>) => {
-    if (viewSvgRef.current && (event.target as Element).tagName === 'svg') {
-      let x = 0;
-      let y = 0;
-      if ('clientX' in event) {
-        x = event.clientX - viewSvgRef.current.offsetLeft;
-        y = event.clientY - viewSvgRef.current.offsetTop - treeHeight;
-      } else if ('targetTouches' in event) {  // TODO: Does this work?
-        x = event.targetTouches[0].clientX - viewSvgRef.current.offsetLeft;
-        y = event.targetTouches[0].clientY - viewSvgRef.current.offsetTop - treeHeight;
-      }
-      onSelectionCleared();
-      setBoxSelectionStart([x, y]);
-      setBoxSelectionEnd(null);
-      setSelecting(true);
-    }
-  };
-
-  const updateBoxSelection = (event: React.MouseEvent<SVGElement> | React.TouchEvent<SVGElement>) => {
-    event.preventDefault();
-    if (selecting && viewSvgRef.current) {
-      if ('clientX' in event) {
-        setBoxSelectionEnd([
-          event.clientX - viewSvgRef.current.offsetLeft,
-          event.clientY - viewSvgRef.current.offsetTop - treeHeight
-        ]);
-      } else if ('targetTouches' in event) {  // TODO: Does this work?
-        setBoxSelectionEnd([
-          event.targetTouches[0].clientX - viewSvgRef.current.offsetLeft,
-          event.targetTouches[0].clientY - viewSvgRef.current.offsetTop - treeHeight
-        ]);
-      }
-    }
-  };
-
-  const finishBoxSelection = (event: React.MouseEvent<SVGElement> | React.TouchEvent<SVGElement>) => {
-    setSelecting(false);
-    if (boxSelectionStart && boxSelectionEnd) {
-      const x1 = Math.min(boxSelectionStart[0], boxSelectionEnd[0]);
-      const y1 = Math.min(boxSelectionStart[1], boxSelectionEnd[1]);
-      const x2 = Math.max(boxSelectionStart[0], boxSelectionEnd[0]);
-      const y2 = Math.max(boxSelectionStart[1], boxSelectionEnd[1]);
-      onNodesSelected(Object.values(positionedNodes)
-        .filter((node) => node.x > x1 && node.x < x2 && node.y > y1 && node.y < y2)
-        .map((node) => node.id), false);
-      setBoxSelectionStart(null);
-      setBoxSelectionEnd(null);
-    }
-  };
 
   const renderNodes = () => Object.entries(positionedNodes).map(
     ([nodeId, node]) => editingNode !== nodeId && (
@@ -192,29 +134,11 @@ const ViewSvg: React.FC<ViewSvgProps> = ({ nodes, sentence, selectedNodes, editi
     />;
   }
 
-  const renderSelectionBox = (): React.ReactNode => {
-    if (selecting && boxSelectionStart && boxSelectionEnd) {
-      const [x1, y1] = boxSelectionStart;
-      const [x2, y2] = boxSelectionEnd;
-      return <rect
-        className="selection-box"
-        x={Math.min(x1, x2)} y={Math.min(y1, y2)}
-        width={Math.abs(x2 - x1)} height={Math.abs(y2 - y1)}
-      />
-    }
-    return false;
-  };
-
-  return <div className="ViewSvg" ref={viewSvgRef}>
-    <svg width={measureText(sentence)} height={treeHeight}
-      onMouseDown={initiateBoxSelection}
-      onMouseMove={updateBoxSelection}
-      onMouseUp={finishBoxSelection}
-    >
+  return <div className="ViewSvg">
+    <svg width={measureText(sentence)} height={treeHeight}>
       <g transform={`translate(0,${treeHeight})`}>
         {renderNodes()}
         {renderLinks()}
-        {renderSelectionBox()}
       </g>
     </svg>
     {editingNode && renderEditingNode()}

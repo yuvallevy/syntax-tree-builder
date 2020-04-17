@@ -44,13 +44,6 @@ $active-edit-box-color: #62b0f4;
   }
 }
 
-.selection-box {
-  fill: rgba(0, 0, 0, 0.1);
-  stroke: #666;
-  stroke-width: 1;
-  stroke-dasharray: 4 4;
-}
-
 @keyframes marching-ants {
   0% {
     stroke-dashoffset: 0;
