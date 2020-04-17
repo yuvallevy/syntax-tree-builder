@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { measureText } from './measureText';
 import { flatMap } from 'lodash';
 import { NodeTree, NodeId, PositionedNodeTree, PositionedNodeData } from './interfaces';
@@ -15,6 +15,7 @@ interface ViewSvgProps {
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
   onSelectionCleared: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
+  ref: React.Ref<HTMLDivElement>;
 }
 
 /**
@@ -60,10 +61,10 @@ const lineToSlice = (node: PositionedNodeData) => node.slice && <line
   y2={node.y + LEVEL_HEIGHT}
 />
 
-const ViewSvg: React.FC<ViewSvgProps> = ({
+const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
   nodes, sentence, selectedNodes, editingNode, positionedNodes, treeHeight,
   onNodesSelected, onSelectionCleared, onNodeLabelChanged
-}) => {
+}, ref) => {
   /**
    * Sets a node as selected.
    * @param event Event that triggered the selection.
@@ -134,7 +135,7 @@ const ViewSvg: React.FC<ViewSvgProps> = ({
     />;
   }
 
-  return <div className="ViewSvg">
+  return <div className="ViewSvg" ref={ref}>
     <svg width={measureText(sentence)} height={treeHeight}>
       <g transform={`translate(0,${treeHeight})`}>
         {renderNodes()}
@@ -145,4 +146,4 @@ const ViewSvg: React.FC<ViewSvgProps> = ({
   </div>;
 };
 
-export default ViewSvg;
+export default forwardRef(ViewSvg);

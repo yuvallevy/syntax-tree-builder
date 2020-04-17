@@ -26,6 +26,7 @@ const View: React.FC<ViewProps> = ({
   const [selecting, setSelecting] = useState<boolean>(false);
   const [boxSelectionStart, setBoxSelectionStart] = useState<[number, number] | null>();
   const [boxSelectionEnd, setBoxSelectionEnd] = useState<[number, number] | null>();
+  const viewSvgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const newPositionedNodes = computeNodePositions(nodes, sentence);
@@ -45,7 +46,7 @@ const View: React.FC<ViewProps> = ({
   }
 
   const initiateBoxSelection = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    if ((event.target as Element).className === 'View' || (event.target as Element).tagName === 'svg') {
+    if (viewSvgRef.current && ((event.target as Element).className === 'View' || (event.target as Element).tagName === 'svg')) {
       let x = 0;
       let y = 0;
       if ('clientX' in event) {
@@ -63,7 +64,7 @@ const View: React.FC<ViewProps> = ({
   };
   
   const updateBoxSelection = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    if (selecting) {
+    if (selecting && viewSvgRef.current) {
       event.preventDefault();
       if ('clientX' in event) {
         setBoxSelectionEnd([
@@ -78,18 +79,22 @@ const View: React.FC<ViewProps> = ({
       }
     }
   };
+
+  const windowCoordsToTreeCoords = (coords: [number, number]): [number, number] => [
+    coords[0] - viewSvgRef.current!.offsetLeft,
+    coords[1] - viewSvgRef.current!.offsetTop - treeHeight
+  ];
   
   const finishBoxSelection = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     setSelecting(false);
-    if (boxSelectionStart && boxSelectionEnd) {
-      const x1 = Math.min(boxSelectionStart[0], boxSelectionEnd[0]);
-      const y1 = Math.min(boxSelectionStart[1], boxSelectionEnd[1]);
-      const x2 = Math.max(boxSelectionStart[0], boxSelectionEnd[0]);
-      const y2 = Math.max(boxSelectionStart[1], boxSelectionEnd[1]);
-      console.log(`(${x1}, ${y1}) (${x2}, ${y2})`);
-      // onNodesSelected(Object.values(positionedNodes)
-        // .filter((node) => node.x > x1 && node.x < x2 && node.y > y1 && node.y < y2)
-        // .map((node) => node.id), false);
+    if (viewSvgRef.current && boxSelectionStart && boxSelectionEnd) {
+      const [x1, y1] = windowCoordsToTreeCoords(boxSelectionStart);
+      const [x2, y2] = windowCoordsToTreeCoords(boxSelectionEnd);
+      onNodesSelected(Object.values(positionedNodes)
+        .filter((node) =>
+          node.x > Math.min(x1, x2) && node.x < Math.max(x1, x2) &&
+          node.y > Math.min(y1, y2) && node.y < Math.max(y1, y2))
+        .map((node) => node.id), false);
       setBoxSelectionStart(null);
       setBoxSelectionEnd(null);
     }
@@ -138,6 +143,7 @@ const View: React.FC<ViewProps> = ({
         onNodesSelected={onNodesSelected}
         onSelectionCleared={onSelectionCleared}
         onNodeLabelChanged={onNodeLabelChanged}
+        ref={viewSvgRef}
       />}
       {renderInput()}
       {renderSelectionBox()}
