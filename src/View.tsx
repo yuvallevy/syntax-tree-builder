@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ViewSvg from './ViewSvg';
 import { isEmpty } from 'lodash';
-import { NodeTree, NodeId, PositionedNodeTree } from './interfaces';
+import { NodeTree, NodeId, PositionedNodeTree, PositionedNodeData } from './interfaces';
 import { computeNodePositions, computeTreeWidth, computeTreeHeight, LABEL_HEIGHT } from './positioning';
 import './View.scss';
 
@@ -18,6 +18,22 @@ interface ViewProps {
 }
 
 const TREE_X_MARGIN = 16;
+
+/**
+ * Returns whether the center of the given node is within the rectangle defined by the points (x1,y1),(x2,y2).
+ */
+const isNodeInRect = (node: PositionedNodeData, x1: number, y1: number, x2: number, y2: number) =>
+  node.x > Math.min(x1, x2) && node.x < Math.max(x1, x2) &&
+  node.y + LABEL_HEIGHT / 2 > Math.min(y1, y2) &&
+  node.y + LABEL_HEIGHT / 2 < Math.max(y1, y2);
+
+/**
+ * Returns the mouse/touch position from the given mouse/touch event.
+ */
+const getInteractionPos = (event: React.MouseEvent | React.TouchEvent): [number, number] =>
+  'clientX' in event ? [event.clientX, event.clientY]
+    : 'targetTouches' in event ? [event.targetTouches[0].clientX, event.targetTouches[0].clientY]
+    : [0, 0];
 
 const View: React.FC<ViewProps> = ({
   nodes, sentence, selectedNodes, editingNode,
@@ -54,17 +70,8 @@ const View: React.FC<ViewProps> = ({
 
   const initiateBoxSelection = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (viewSvgRef.current && ((event.target as Element).className === 'View' || (event.target as Element).tagName === 'svg')) {
-      let x = 0;
-      let y = 0;
-      if ('clientX' in event) {
-        x = event.clientX;
-        y = event.clientY;
-      } else if ('targetTouches' in event) {  // TODO: Does this work?
-        x = event.targetTouches[0].clientX;
-        y = event.targetTouches[0].clientY;
-      }
       onSelectionCleared();
-      setBoxSelectionStart([x, y]);
+      setBoxSelectionStart(getInteractionPos(event));
       setBoxSelectionEnd(null);
       setSelecting(true);
     }
@@ -73,17 +80,7 @@ const View: React.FC<ViewProps> = ({
   const updateBoxSelection = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (selecting && viewSvgRef.current) {
       event.preventDefault();
-      if ('clientX' in event) {
-        setBoxSelectionEnd([
-          event.clientX,
-          event.clientY
-        ]);
-      } else if ('targetTouches' in event) {  // TODO: Does this work?
-        setBoxSelectionEnd([
-          event.targetTouches[0].clientX,
-          event.targetTouches[0].clientY
-        ]);
-      }
+      setBoxSelectionEnd(getInteractionPos(event));
     }
   };
 
@@ -98,10 +95,7 @@ const View: React.FC<ViewProps> = ({
       const [x1, y1] = windowCoordsToTreeCoords(boxSelectionStart);
       const [x2, y2] = windowCoordsToTreeCoords(boxSelectionEnd);
       onNodesSelected(Object.values(positionedNodes)
-        .filter((node) =>
-          node.x > Math.min(x1, x2) && node.x < Math.max(x1, x2) &&
-          node.y + LABEL_HEIGHT / 2 > Math.min(y1, y2) &&
-          node.y + LABEL_HEIGHT / 2 < Math.max(y1, y2))
+        .filter((node) => isNodeInRect(node, x1, y1, x2, y2))
         .map((node) => node.id), false);
       setBoxSelectionStart(null);
       setBoxSelectionEnd(null);
