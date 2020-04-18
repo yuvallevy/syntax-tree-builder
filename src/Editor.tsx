@@ -195,7 +195,9 @@ const Editor: React.FC = () => {
   useHotkeys('f2,enter', onToggleEditMode, {
     filter: () => true
   });
-  useHotkeys('delete,backspace', onNodesDeleted);
+  useHotkeys('delete,backspace', onNodesDeleted, {
+    filter: (event: KeyboardEvent) => (event.target as Element).tagName !== 'INPUT'
+  });
 
   return (
     <div className="Editor">
