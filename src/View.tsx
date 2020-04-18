@@ -17,6 +17,8 @@ interface ViewProps {
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
 }
 
+const TREE_X_MARGIN = 16;
+
 const View: React.FC<ViewProps> = ({
   nodes, sentence, selectedNodes, editingNode,
   onSentenceChanged, onTextSelected, onNodesSelected, onSelectionCleared, onNodeLabelChanged
@@ -86,7 +88,7 @@ const View: React.FC<ViewProps> = ({
   };
 
   const windowCoordsToTreeCoords = (coords: [number, number]): [number, number] => [
-    coords[0] - viewSvgRef.current!.offsetLeft,
+    coords[0] - viewSvgRef.current!.offsetLeft - TREE_X_MARGIN,
     coords[1] - viewSvgRef.current!.offsetTop - treeHeight
   ];
   
@@ -146,6 +148,7 @@ const View: React.FC<ViewProps> = ({
         positionedNodes={positionedNodes}
         treeWidth={treeWidth}
         treeHeight={treeHeight}
+        treeXMargin={TREE_X_MARGIN}
         onNodesSelected={onNodesSelected}
         onSelectionCleared={onSelectionCleared}
         onNodeLabelChanged={onNodeLabelChanged}

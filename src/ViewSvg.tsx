@@ -13,6 +13,7 @@ interface ViewSvgProps {
   positionedNodes: PositionedNodeTree;
   treeWidth: number;
   treeHeight: number;
+  treeXMargin: number;
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
   onSelectionCleared: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
@@ -63,7 +64,7 @@ const lineToSlice = (node: PositionedNodeData) => node.slice && <line
 />
 
 const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
-  nodes, sentence, selectedNodes, editingNode, positionedNodes, treeWidth, treeHeight,
+  nodes, sentence, selectedNodes, editingNode, positionedNodes, treeWidth, treeHeight, treeXMargin,
   onNodesSelected, onSelectionCleared, onNodeLabelChanged
 }, ref) => {
   /**
@@ -127,7 +128,7 @@ const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
       data-node-id={node.id}
       value={node.label}
       style={{
-        left: node.x - (EDIT_TEXT_BOX_WIDTH / 2),
+        left: node.x - (EDIT_TEXT_BOX_WIDTH / 2) + treeXMargin,
         top: node.y + treeHeight,
         width: EDIT_TEXT_BOX_WIDTH
       }}
@@ -137,8 +138,8 @@ const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
   }
 
   return <div className="ViewSvg" ref={ref}>
-    <svg width={treeWidth} height={treeHeight}>
-      <g transform={`translate(0,${treeHeight})`}>
+    <svg width={treeWidth + treeXMargin * 2} height={treeHeight + 1}>
+      <g transform={`translate(${treeXMargin},${treeHeight})`}>
         {renderNodes()}
         {renderLinks()}
       </g>
