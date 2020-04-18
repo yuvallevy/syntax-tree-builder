@@ -1,4 +1,5 @@
 import React, { useReducer } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 import View from './View';
 import Controls from './Controls';
 import { NodeId, NodeTree } from './interfaces';
@@ -20,7 +21,7 @@ type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'selectNode'; nodeIds: NodeId[]; multi: boolean; }
   | { type: 'clearSelection'; }
   | { type: 'addNode'; }
-  | { type: 'editNode'; }
+  | { type: 'toggleEditMode'; }
   | { type: 'deleteNodes'; }
   | { type: 'toggleTriangle'; newValue: boolean; }
   | { type: 'setLabel'; nodeId: NodeId; newValue: string; };
@@ -117,14 +118,15 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
         selectedNodes: new Set([newNodeId]),
         editingNode: newNodeId
       }
-    case 'editNode':
+    case 'toggleEditMode':
       if (!state.selectedNodes) {
         return state;
       }
+      const newEditingNode = Array.from(state.selectedNodes).pop() || null;
       return {
         ...state,
-        editingNode: Array.from(state.selectedNodes).pop() || null
-      }
+        editingNode: state.editingNode === newEditingNode ? null : newEditingNode
+      };
     case 'deleteNodes':
       if (!state.selectedNodes) {
         return state;
@@ -182,10 +184,18 @@ const Editor: React.FC = () => {
   const onNodesSelected = (nodeIds: NodeId[], multi: boolean) => dispatch({ type: 'selectNode', nodeIds, multi });
   const onSelectionCleared = () => dispatch({ type: 'clearSelection' });
   const onNodeAdded = () => dispatch({ type: 'addNode' });
-  const onEnterEditMode = () => dispatch({ type: 'editNode' });
+  const onToggleEditMode = () => dispatch({ type: 'toggleEditMode' });
   const onNodesDeleted = () => dispatch({ type: 'deleteNodes' })
   const onTriangleToggled = (newValue: boolean) => dispatch({ type: 'toggleTriangle', newValue })
   const onNodeLabelChanged = (nodeId: NodeId, newValue: string) => dispatch({ type: 'setLabel', nodeId, newValue });
+
+  useHotkeys('ctrl+up', (event) => { event.preventDefault(); onNodeAdded(); }, {
+    filter: () => true
+  });
+  useHotkeys('f2,enter', onToggleEditMode, {
+    filter: () => true
+  });
+  useHotkeys('delete,backspace', onNodesDeleted);
 
   return (
     <div className="Editor">
@@ -195,7 +205,7 @@ const Editor: React.FC = () => {
         selectedRange={state.selectedRange}
         selectedNodes={state.selectedNodes}
         onNodeAdded={onNodeAdded}
-        onEnterEditMode={onEnterEditMode}
+        onToggleEditMode={onToggleEditMode}
         onNodesDeleted={onNodesDeleted}
         onTriangleToggled={onTriangleToggled}
       />

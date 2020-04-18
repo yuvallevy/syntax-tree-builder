@@ -9,12 +9,12 @@ interface ControlsProps {
   selectedRange: [number, number] | null;
   selectedNodes: Set<NodeId> | null;
   onNodeAdded: () => void;
-  onEnterEditMode: () => void;
+  onToggleEditMode: () => void;
   onNodesDeleted: () => void;
   onTriangleToggled: (newValue: boolean) => void;
 }
 
-const Controls: React.FC<ControlsProps> = ({ nodes, selectedRange, selectedNodes, onNodeAdded, onEnterEditMode, onNodesDeleted, onTriangleToggled }) => {
+const Controls: React.FC<ControlsProps> = ({ nodes, selectedRange, selectedNodes, onNodeAdded, onToggleEditMode: onEnterEditMode, onNodesDeleted, onTriangleToggled }) => {
   const triangleToggleEnabled: boolean = !!selectedNodes && !!selectedNodes.size && Array.from(selectedNodes).every(nodeId => nodes[nodeId].slice);
   const triangleToggleChecked: boolean = triangleToggleEnabled && Array.from(selectedNodes as Set<NodeId>).some(nodeId => nodes[nodeId].triangle);
 
