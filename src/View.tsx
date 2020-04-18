@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ViewSvg from './ViewSvg';
 import { isEmpty } from 'lodash';
 import { NodeTree, NodeId, PositionedNodeTree } from './interfaces';
-import { computeNodePositions, computeTreeHeight } from './positioning';
+import { computeNodePositions, computeTreeWidth, computeTreeHeight } from './positioning';
 import './View.scss';
 
 interface ViewProps {
@@ -22,11 +22,16 @@ const View: React.FC<ViewProps> = ({
   onSentenceChanged, onTextSelected, onNodesSelected, onSelectionCleared, onNodeLabelChanged
 }) => {
   const [positionedNodes, setPositionedNodes] = useState<PositionedNodeTree>({});
+  const [treeWidth, setTreeWidth] = useState<number>(0);
   const [treeHeight, setTreeHeight] = useState<number>(0);
   const [selecting, setSelecting] = useState<boolean>(false);
   const [boxSelectionStart, setBoxSelectionStart] = useState<[number, number] | null>();
   const [boxSelectionEnd, setBoxSelectionEnd] = useState<[number, number] | null>();
   const viewSvgRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setTreeWidth(computeTreeWidth(sentence));
+  }, [sentence]);
 
   useEffect(() => {
     const newPositionedNodes = computeNodePositions(nodes, sentence);
@@ -139,6 +144,7 @@ const View: React.FC<ViewProps> = ({
         selectedNodes={selectedNodes}
         editingNode={editingNode}
         positionedNodes={positionedNodes}
+        treeWidth={treeWidth}
         treeHeight={treeHeight}
         onNodesSelected={onNodesSelected}
         onSelectionCleared={onSelectionCleared}

@@ -143,6 +143,14 @@ export const computeNodePositions = (nodes: NodeTree, sentence: string): Positio
 }
 
 /**
+ * Returns the total width necessary to accommodate the given node tree.
+ * @param  {string} sentence Sentence to measure against.
+ * @return {number}          Total target width of tree.
+ */
+export const computeTreeWidth = (sentence: string): number =>
+  measureText(sentence);
+
+/**
  * Returns the total height necessary to accommodate the given node tree.
  * @param  {PositionedNodeTree} positionedNodes Tree of nodes with exact positions.
  * @return {number}                             Total target height of tree.
