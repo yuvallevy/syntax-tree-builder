@@ -1,13 +1,10 @@
 import React, { forwardRef } from 'react';
-import { measureText } from './measureText';
 import { flatMap } from 'lodash';
-import { NodeTree, NodeId, PositionedNodeTree, PositionedNodeData } from './interfaces';
+import { NodeId, PositionedNodeTree, PositionedNodeData } from './interfaces';
 import { LABEL_WIDTH, LABEL_HEIGHT, LEVEL_HEIGHT, EDIT_TEXT_BOX_WIDTH } from './positioning';
 import './ViewSvg.scss';
 
 interface ViewSvgProps {
-  nodes: NodeTree;
-  sentence: string;
   selectedNodes: Set<NodeId> | null;
   editingNode: NodeId | null;
   positionedNodes: PositionedNodeTree;
@@ -15,7 +12,6 @@ interface ViewSvgProps {
   treeHeight: number;
   treeXMargin: number;
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
-  onSelectionCleared: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
   ref: React.Ref<HTMLDivElement>;
 }
@@ -64,8 +60,8 @@ const lineToSlice = (node: PositionedNodeData) => node.slice && <line
 />
 
 const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
-  nodes, sentence, selectedNodes, editingNode, positionedNodes, treeWidth, treeHeight, treeXMargin,
-  onNodesSelected, onSelectionCleared, onNodeLabelChanged
+  selectedNodes, editingNode, positionedNodes, treeWidth, treeHeight, treeXMargin,
+  onNodesSelected, onNodeLabelChanged
 }, ref) => {
   /**
    * Sets a node as selected.

@@ -141,8 +141,6 @@ const View: React.FC<ViewProps> = ({
       onMouseUp={finishBoxSelection}
     >
       {!isEmpty(nodes) && <ViewSvg
-        nodes={nodes}
-        sentence={sentence}
         selectedNodes={selectedNodes}
         editingNode={editingNode}
         positionedNodes={positionedNodes}
@@ -150,7 +148,6 @@ const View: React.FC<ViewProps> = ({
         treeHeight={treeHeight}
         treeXMargin={TREE_X_MARGIN}
         onNodesSelected={onNodesSelected}
-        onSelectionCleared={onSelectionCleared}
         onNodeLabelChanged={onNodeLabelChanged}
         ref={viewSvgRef}
       />}
