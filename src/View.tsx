@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ViewSvg from './ViewSvg';
 import { isEmpty } from 'lodash';
 import { NodeTree, NodeId, PositionedNodeTree } from './interfaces';
-import { computeNodePositions, computeTreeWidth, computeTreeHeight } from './positioning';
+import { computeNodePositions, computeTreeWidth, computeTreeHeight, LABEL_HEIGHT } from './positioning';
 import './View.scss';
 
 interface ViewProps {
@@ -100,7 +100,8 @@ const View: React.FC<ViewProps> = ({
       onNodesSelected(Object.values(positionedNodes)
         .filter((node) =>
           node.x > Math.min(x1, x2) && node.x < Math.max(x1, x2) &&
-          node.y > Math.min(y1, y2) && node.y < Math.max(y1, y2))
+          node.y + LABEL_HEIGHT / 2 > Math.min(y1, y2) &&
+          node.y + LABEL_HEIGHT / 2 < Math.max(y1, y2))
         .map((node) => node.id), false);
       setBoxSelectionStart(null);
       setBoxSelectionEnd(null);
