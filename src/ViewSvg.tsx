@@ -12,6 +12,7 @@ interface ViewSvgProps {
   treeHeight: number;
   treeXMargin: number;
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
+  onToggleEditMode: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
   ref: React.Ref<HTMLDivElement>;
 }
@@ -61,7 +62,7 @@ const lineToSlice = (node: PositionedNodeData) => node.slice && <line
 
 const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
   selectedNodes, editingNode, positionedNodes, treeWidth, treeHeight, treeXMargin,
-  onNodesSelected, onNodeLabelChanged
+  onNodesSelected, onToggleEditMode, onNodeLabelChanged
 }, ref) => {
   /**
    * Sets a node as selected.
@@ -97,12 +98,14 @@ const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
           width={LABEL_WIDTH} height={LABEL_HEIGHT}
           onMouseDown={selectNode}
           onTouchStart={selectNode}
+          onDoubleClick={onToggleEditMode}
         />
         <text
           x={node.x} y={node.y}
           data-node-id={nodeId}
           onMouseDown={selectNode}
           onTouchStart={selectNode}
+          onDoubleClick={onToggleEditMode}
         >
           {node.label}
         </text>

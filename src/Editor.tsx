@@ -220,6 +220,7 @@ const Editor: React.FC = () => {
         onTextSelected={onTextSelected}
         onNodesSelected={onNodesSelected}
         onSelectionCleared={onSelectionCleared}
+        onToggleEditMode={onToggleEditMode}
         onNodeLabelChanged={onNodeLabelChanged}
       />
     </div>

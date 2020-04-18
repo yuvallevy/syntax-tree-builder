@@ -14,6 +14,7 @@ interface ViewProps {
   onTextSelected: (start: number, end: number) => void;
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
   onSelectionCleared: () => void;
+  onToggleEditMode: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
 }
 
@@ -37,7 +38,7 @@ const getInteractionPos = (event: React.MouseEvent | React.TouchEvent): [number,
 
 const View: React.FC<ViewProps> = ({
   nodes, sentence, selectedNodes, editingNode,
-  onSentenceChanged, onTextSelected, onNodesSelected, onSelectionCleared, onNodeLabelChanged
+  onSentenceChanged, onTextSelected, onNodesSelected, onSelectionCleared, onToggleEditMode, onNodeLabelChanged
 }) => {
   const [positionedNodes, setPositionedNodes] = useState<PositionedNodeTree>({});
   const [treeWidth, setTreeWidth] = useState<number>(0);
@@ -143,6 +144,7 @@ const View: React.FC<ViewProps> = ({
         treeHeight={treeHeight}
         treeXMargin={TREE_X_MARGIN}
         onNodesSelected={onNodesSelected}
+        onToggleEditMode={onToggleEditMode}
         onNodeLabelChanged={onNodeLabelChanged}
         ref={viewSvgRef}
       />}
