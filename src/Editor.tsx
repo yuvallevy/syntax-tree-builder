@@ -189,14 +189,29 @@ const Editor: React.FC = () => {
   const onTriangleToggled = (newValue: boolean) => dispatch({ type: 'toggleTriangle', newValue })
   const onNodeLabelChanged = (nodeId: NodeId, newValue: string) => dispatch({ type: 'setLabel', nodeId, newValue });
 
-  useHotkeys('ctrl+up', (event) => { event.preventDefault(); onNodeAdded(); }, {
+  useHotkeys('ctrl+up,f2,enter,delete,backspace', (event, handler) => {
+    switch (handler.key) {
+      case 'ctrl+up':
+        event.preventDefault();
+        onNodeAdded();
+        break;
+      case 'f2':
+      case 'enter':
+        event.preventDefault();
+        onToggleEditMode();
+        break;
+      case 'delete':
+      case 'backspace':
+        if ((event.target as Element).tagName !== 'INPUT') {
+          event.preventDefault();
+          onNodesDeleted();
+        }
+        break;
+      default:
+        // pass
+    }
+  }, {
     filter: () => true
-  });
-  useHotkeys('f2,enter', onToggleEditMode, {
-    filter: () => true
-  });
-  useHotkeys('delete,backspace', onNodesDeleted, {
-    filter: (event: KeyboardEvent) => (event.target as Element).tagName !== 'INPUT'
   });
 
   return (
