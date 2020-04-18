@@ -1,44 +1,48 @@
 $active-color: #1080f0;
 $disabled-color: rgba(0, 0, 0, 0.333);
+$toolbar-background-color: #fafafa;
+$toolbar-border-color: #eee;
+$tooltip-background-color: transparentize($toolbar-background-color, 0.667);
+$tooltip-border-color: transparentize($toolbar-border-color, 0.667);
+$toolbar-height: 37px;
 
 .Controls {
   display: flex;
   flex-direction: row;
-  background-color: #fafafa;
-  border-bottom: 1px solid #eee;
+  background-color: $toolbar-background-color;
+  border-bottom: 1px solid $toolbar-border-color;
+  height: $toolbar-height;
   button {
     background-color: transparent;
     border: none;
     border-radius: 2px;
     width: 32px;
-    height: 32px;
     margin: 2px;
     padding: 0;
     &:focus {
       outline: none;
     }
-    &:not(:disabled):hover {
-      background-color: rgba(0, 0, 0, 0.05);
-    }
-    &:not(:disabled):active {
-      background-color: rgba(0, 0, 0, 0.1);
-      svg {
+    &:not(:disabled) {
+      cursor: pointer;
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+      &:active {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+      &:active svg, &.active svg {
         color: $active-color;
         stroke-width: 2px;
       }
     }
     &:disabled {
+      cursor: not-allowed;
       color: $disabled-color;
       svg {
         stroke-width: 1.5px;
       }
     }
-  }
-  button input[type=checkbox] {
-    visibility: hidden;
-    width: 0;
-    margin: 0;
-    &:checked ~ svg {
+    &.active svg {
       color: $active-color;
       stroke-width: 2px;
     }
@@ -50,5 +54,18 @@ $disabled-color: rgba(0, 0, 0, 0.333);
     &#i-plus {
       transform: translate(0.5px, 0.5px);
     }
+  }
+  .tooltip {
+    position: absolute;
+    left: 0;
+    top: $toolbar-height;
+    right: 0;
+    z-index: 10;
+    padding: 4px 6px;
+    background-color: $tooltip-background-color;
+    border-bottom: 1px solid $tooltip-border-color;
+    font-size: 14px;
+    font-style: italic;
+    color: #333;
   }
 }
