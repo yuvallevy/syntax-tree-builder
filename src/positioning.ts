@@ -5,10 +5,10 @@ import { mean } from 'lodash';
 type PositionCache = Map<NodeId, number>;
 type SpanCache = Map<NodeId, [number, number]>;
 
-export const LABEL_WIDTH = 28
-export const LABEL_HEIGHT = 22
-export const EDIT_TEXT_BOX_WIDTH = 32
-export const LEVEL_HEIGHT = 40
+export const LABEL_WIDTH = 28;
+export const LABEL_HEIGHT = 22;
+export const EDIT_TEXT_BOX_WIDTH = 32;
+export const LEVEL_HEIGHT = 40;
 
 const xCache: PositionCache = new Map();
 const yCache: PositionCache = new Map();
