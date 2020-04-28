@@ -18,11 +18,11 @@ const nodeTree: NodeTree = {
 };
 
 const positionedNodeTree: PositionedNodeTree = {
-  'KNICuEVF|knF': { ...nodeTree['KNICuEVF|knF'], x: 31.96875, y: -40 },
-  'M}E@bxcClTOC': { ...nodeTree['M}E@bxcClTOC'], x: 88.7265625, y: -40 },
-  'qNC_Mmj}dExD': { ...nodeTree['qNC_Mmj}dExD'], x: 131.8203125, y: -40 },
-  'h@a@YTJjySzv': { ...nodeTree['h@a@YTJjySzv'], x: 172.9296875, y: -40 },
-  'jrleAVGiWcDd': { ...nodeTree['jrleAVGiWcDd'], x: 225.921875, y: -40 },
+  'KNICuEVF|knF': { ...nodeTree['KNICuEVF|knF'], x: 31.96875, sliceXSpan: [0, 63.9375], y: -40 },
+  'M}E@bxcClTOC': { ...nodeTree['M}E@bxcClTOC'], x: 88.7265625, sliceXSpan: [68.328125, 109.125], y: -40 },
+  'qNC_Mmj}dExD': { ...nodeTree['qNC_Mmj}dExD'], x: 131.8203125, sliceXSpan: [113.515625, 150.125], y: -40 },
+  'h@a@YTJjySzv': { ...nodeTree['h@a@YTJjySzv'], x: 172.9296875, sliceXSpan: [154.515625, 191.34375], y: -40 },
+  'jrleAVGiWcDd': { ...nodeTree['jrleAVGiWcDd'], x: 225.921875, sliceXSpan: [195.734375, 256.109375], y: -40 },
   'VLO[qaqYRY{Q': { ...nodeTree['VLO[qaqYRY{Q'], x: 110.2734375, y: -80 },
   'OZZVyJJI|rrg': { ...nodeTree['OZZVyJJI|rrg'], x: 71.12109375, y: -120 },
   'o{[romK`VyJk': { ...nodeTree['o{[romK`VyJk'], x: 199.42578125, y: -80 },
@@ -31,7 +31,7 @@ const positionedNodeTree: PositionedNodeTree = {
 
 describe('node positioning', () => {
   it('computes X and Y positions of nodes', () => {
-    expect(computeNodePositions(nodeTree, sentence)).toMatchObject(positionedNodeTree)
+    expect(computeNodePositions(nodeTree, sentence)).toMatchObject(positionedNodeTree);
   });
 });
 
