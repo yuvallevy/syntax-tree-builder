@@ -1,3 +1,49 @@
+/** 
+ * We assume that the tree is built bottom-up; i.e. the user starts by inputting the sentence to be analyzed, then
+ * labels each part of speech and works their way up to the root of the tree.
+ * In other words, parent nodes are defined after child nodes.
+ * 
+ * A leaf node (one at the bottom of the tree) corresponds to a word or phrase, which is defined as a "slice" of the
+ * sentence (a range of character indices).
+ * The X coordinate of such a node is derived by averaging the X coordinates, in pixels, of the beginning and end of
+ * the slice. (We use measureText() to find said X coordinates.)
+ * Conversely, a parent node's X coordinate is derived by averaging those of its children.
+ * 
+ * Leaf nodes also have "X spans", referring to where their respective slices begin and end. This is used for triangle
+ * notation, which should span the entire phrase it corresponds to.
+ * 
+ * Finding Y coordinates is simpler, but somewhat counterintuitive: since we define the tree bottom-up, it is easier to
+ * treat Y=0 as the "sentence level" and go up towards -Y, going as high as we need.
+ * We can then easily find the height necessary to contain the tree by simply taking the minimum Y-coordinate, which
+ * will necessarily be negative (assuming there are any nodes in the tree), negating that to get a positive value, then
+ * using SVG transforms to translate the whole tree down by that amount, and assigning the height of the SVG element to
+ * the same value.
+ * Knowing this, we can derive the Y coordinates, assuming each "level" of the tree has a fixed height:
+ *   - For a leaf node, the Y coordinate is simply the level height negated. This ensures that the bottom level will
+ *     end at exactly Y=0.
+ *   - For a parent node, the Y coordinate is the minimum of all Y coordinates of its children, minus the level height.
+ * 
+ * By repeating these computations recursively, we can derive exact coordinates for all nodes in the tree.
+ * However, this can lead to repeated calculations: to find the coordinates of a parent node, we must also find the
+ * coordinates of all of its child nodes. This means that some nodes' positions may be calculated more than once - more
+ * or less depending on the iteration order. This problem is exacerbated by the fact that by default in JS, object
+ * properties are iterated in insertion order, which in most cases will be bottom-up.
+ * 
+ * We solve this by using a set of simple caches: for any given tree, the position of a node always stays the same, so
+ * once a node's position is calculated it can be stored for future reference. This guarantees that each coordinate
+ * calculation will be done exactly once per node.
+ * 
+ * The recursive computation is triggered by calling one function, computeNodePositions(). The utility functions it
+ * calls are recursive, but it is not a recursive function in itself, so it is guaranteed to be called only once per
+ * tree. This way, invalidation of the caches is also well-defined: whenever computeNodePositions() is called, the
+ * caches are cleared and prepared for use in the next computation without stale data.
+ * 
+ * When a leaf node is deleted and its parent node is left without any children, the parent does not "adopt" the slice
+ * previously occupied by the leaf node. Instead, the parent node becomes "stranded", meaning it has neither children
+ * nor a slice, and so has nothing to define its position by. These nodes are exempt from position cache invalidation.
+ * (This may change in a future version.)
+ */
+
 import { NodeId, NodeTree, NodeData, PositionedNodeTree } from './interfaces';
 import { measureText } from './measureText';
 import { mean } from 'lodash';
@@ -10,6 +56,7 @@ export const LABEL_HEIGHT = 22;
 export const EDIT_TEXT_BOX_WIDTH = 32;
 export const LEVEL_HEIGHT = 40;
 
+// Position caches
 const xCache: PositionCache = new Map();
 const yCache: PositionCache = new Map();
 const xSpanCache: SpanCache = new Map();
