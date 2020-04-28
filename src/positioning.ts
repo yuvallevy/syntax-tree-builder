@@ -80,11 +80,10 @@ const computeNodeY = (nodes: NodeTree, node: NodeData) => node.slice ? -LEVEL_HE
  * @param  {NodeTree} nodes    Tree of nodes.
  * @param  {string}   sentence Sentence to measure against.
  * @param  {NodeData} node     Node to position.
- * @param  {boolean}  invalidateCache Whether to invalidate the position cache (usually because the data has changed).
  * @return {number}            Node's target X position.
  */
-const getNodeX = (nodes: NodeTree, sentence: string, node: NodeData, invalidateCache: boolean = false): number => {
-  if (invalidateCache || !xCache.has(node.id)) {
+const getNodeX = (nodes: NodeTree, sentence: string, node: NodeData): number => {
+  if (!xCache.has(node.id)) {
     const targetX = computeNodeX(nodes, sentence, node);
     if (targetX) {
       xCache.set(node.id, targetX);
@@ -97,12 +96,11 @@ const getNodeX = (nodes: NodeTree, sentence: string, node: NodeData, invalidateC
  * Returns the X span of the given node and caches the result, or retrieves it if it is already cached.
  * @param  {string}   sentence Sentence to measure against.
  * @param  {NodeData} node     Node to operate on.
- * @param  {boolean}  invalidateCache Whether to invalidate the position cache (usually because the data has changed).
  * @return {number}            Node's X span, or null if node has no slice.
  */
-const getNodeXSpan = (sentence: string, node: NodeData, invalidateCache: boolean = false): [number, number] | null => {
+const getNodeXSpan = (sentence: string, node: NodeData): [number, number] | null => {
   if (node.slice) {
-    if (invalidateCache || !xSpanCache.has(node.id)) {
+    if (!xSpanCache.has(node.id)) {
       xSpanCache.set(node.id, computeSliceXSpan(sentence, ...node.slice));
     }
     return xSpanCache.get(node.id) || [0, 0];
@@ -114,14 +112,37 @@ const getNodeXSpan = (sentence: string, node: NodeData, invalidateCache: boolean
  * Returns the Y position of the given node and caches the result, or retrieves it if it is already cached.
  * @param  {NodeTree} nodes Tree of nodes.
  * @param  {NodeData} node  Node to position.
- * @param  {boolean}  invalidateCache Whether to invalidate the position cache (usually because the data has changed).
  * @return {number}         Node's target Y position.
  */
-const getNodeY = (nodes: NodeTree, node: NodeData, invalidateCache: boolean = false): number => {
-  if (invalidateCache || !yCache.has(node.id)) {
+const getNodeY = (nodes: NodeTree, node: NodeData): number => {
+  if (!yCache.has(node.id)) {
     yCache.set(node.id, computeNodeY(nodes, node));
   }
   return yCache.get(node.id) || 0;
+};
+
+/**
+ * Invalidates the position cache. Removes all nodes that should be recalculated or have been deleted.
+ * Stranded nodes are kept.
+ * @param {NodeTree} nodes Tree of nodes.
+ */
+const invalidateCaches = (nodes: NodeTree) => {
+  // Remove deleted nodes from the cache
+  for (const nodeId of Array.from(xCache.keys())) {
+    if (!nodes[nodeId]) {
+      xCache.delete(nodeId);
+      yCache.delete(nodeId);
+      xSpanCache.delete(nodeId);
+    }
+  }
+  // Invalidate cached positions for all nodes except stranded ones
+  for (const [nodeId, node] of Object.entries(nodes)) {
+    if (node.children?.length || node.slice) {
+      xCache.delete(nodeId);
+      yCache.delete(nodeId);
+      xSpanCache.delete(nodeId);
+    }
+  }
 };
 
 /**
@@ -131,13 +152,14 @@ const getNodeY = (nodes: NodeTree, node: NodeData, invalidateCache: boolean = fa
  * @return {PositionedNodeTree}          Tree of nodes with exact positions.
  */
 export const computeNodePositions = (nodes: NodeTree, sentence: string): PositionedNodeTree => {
+  invalidateCaches(nodes);
   return Object.entries(nodes).reduce((positionedNodes, [id, node]) => ({
     ...positionedNodes,
     [id]: {
       ...node,
-      x: getNodeX(nodes, sentence, node, true),
-      y: getNodeY(nodes, node, true),
-      sliceXSpan: getNodeXSpan(sentence, node, true)
+      x: getNodeX(nodes, sentence, node),
+      y: getNodeY(nodes, node),
+      sliceXSpan: getNodeXSpan(sentence, node)
     }
   }), {});
 }
