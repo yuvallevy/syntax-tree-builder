@@ -16,6 +16,7 @@ interface ViewProps {
   onSelectionCleared: () => void;
   onToggleEditMode: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
+  onNodesMoved: (dx: number, dy: number) => void;
 }
 
 const TREE_X_MARGIN = 16;
@@ -38,7 +39,8 @@ const getInteractionPos = (event: React.MouseEvent | React.TouchEvent): [number,
 
 const View: React.FC<ViewProps> = ({
   nodes, sentence, selectedNodes, editingNode,
-  onSentenceChanged, onTextSelected, onNodesSelected, onSelectionCleared, onToggleEditMode, onNodeLabelChanged
+  onSentenceChanged, onTextSelected, onNodesSelected, onSelectionCleared, onToggleEditMode, onNodeLabelChanged,
+  onNodesMoved
 }) => {
   const [positionedNodes, setPositionedNodes] = useState<PositionedNodeTree>({});
   const [treeWidth, setTreeWidth] = useState<number>(0);
@@ -99,9 +101,19 @@ const View: React.FC<ViewProps> = ({
    * setting the second corner to the current mouse position.
    */
   const updateBoxSelection = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    if (selecting && viewSvgRef.current) {
+    if (viewSvgRef.current) {
       event.preventDefault();
       setBoxSelectionEnd(getInteractionPos(event));
+    }
+  };
+
+  const handleMouseDrag = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    if ((event as React.MouseEvent).buttons === 1 || 'targetTouches' in event) {
+      if (selecting) {
+        updateBoxSelection(event);
+      } else {
+        onNodesMoved((event as React.MouseEvent).movementX, (event as React.MouseEvent).movementY);
+      }
     }
   };
 
@@ -167,7 +179,7 @@ const View: React.FC<ViewProps> = ({
     <div
       className="View"
       onMouseDown={initiateBoxSelection}
-      onMouseMove={updateBoxSelection}
+      onMouseMove={handleMouseDrag}
       onMouseUp={finishBoxSelection}
     >
       {!isEmpty(nodes) && <ViewSvg
@@ -180,6 +192,7 @@ const View: React.FC<ViewProps> = ({
         onNodesSelected={onNodesSelected}
         onToggleEditMode={onToggleEditMode}
         onNodeLabelChanged={onNodeLabelChanged}
+        onNodesMoved={onNodesMoved}
         ref={viewSvgRef}
       />}
       {renderInput()}

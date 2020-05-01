@@ -24,11 +24,13 @@ type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'toggleEditMode'; }
   | { type: 'deleteNodes'; }
   | { type: 'toggleTriangle'; newValue: boolean; }
-  | { type: 'setLabel'; nodeId: NodeId; newValue: string; };
+  | { type: 'setLabel'; nodeId: NodeId; newValue: string; }
+  | { type: 'moveNodes'; dx: number; dy: number; }
+  | { type: 'resetNodePositions' };
 
 const initialState: EditorState = {
-  nodes: {},
-  sentence: '',
+  nodes: TREE,
+  sentence: SENTENCE,
   selectedRange: null,
   selectedNodes: null,
   editingNode: null
@@ -117,6 +119,8 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
           [newNodeId]: {
             id: newNodeId,
             label: '',
+            offsetX: 0,
+            offsetY: 0,
             ...deriveNodeDefinition(state.sentence, state.selectedNodes, state.selectedRange)
           }
         },
@@ -175,6 +179,38 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
           }
         }
       }
+    case 'moveNodes':
+      if (!state.selectedNodes) {
+        return state;
+      }
+      const nodesToMove = Array.from(state.selectedNodes);
+      return {
+        ...state,
+        nodes: {
+          ...state.nodes,
+          ...Object.fromEntries(nodesToMove.map(nodeId => [nodeId, {
+            ...state.nodes[nodeId],
+            offsetX: state.nodes[nodeId].offsetX + action.dx,
+            offsetY: state.nodes[nodeId].offsetY + action.dy
+          }]))
+        }
+      };
+    case 'resetNodePositions':
+      if (!state.selectedNodes) {
+        return state;
+      }
+      const nodesToResetPos = Array.from(state.selectedNodes);
+      return {
+        ...state,
+        nodes: {
+          ...state.nodes,
+          ...Object.fromEntries(nodesToResetPos.map(nodeId => [nodeId, {
+            ...state.nodes[nodeId],
+            offsetX: 0,
+            offsetY: 0
+          }]))
+        }
+      };
     default:
       return state;
   }
@@ -193,6 +229,8 @@ const Editor: React.FC = () => {
   const onNodesDeleted = () => dispatch({ type: 'deleteNodes' })
   const onTriangleToggled = (newValue: boolean) => dispatch({ type: 'toggleTriangle', newValue })
   const onNodeLabelChanged = (nodeId: NodeId, newValue: string) => dispatch({ type: 'setLabel', nodeId, newValue });
+  const onNodesMoved = (dx: number, dy: number) => dispatch({ type: 'moveNodes', dx, dy });
+  const onNodePositionsReset = () => dispatch({ type: 'resetNodePositions' });
 
   useHotkeys('ctrl+up,f2,enter,delete,backspace', (event, handler) => {
     switch (handler.key) {
@@ -230,6 +268,7 @@ const Editor: React.FC = () => {
         onToggleEditMode={onToggleEditMode}
         onNodesDeleted={onNodesDeleted}
         onTriangleToggled={onTriangleToggled}
+        onNodePositionsReset={onNodePositionsReset}
       />
       <View
         nodes={state.nodes}
@@ -242,6 +281,7 @@ const Editor: React.FC = () => {
         onSelectionCleared={onSelectionCleared}
         onToggleEditMode={onToggleEditMode}
         onNodeLabelChanged={onNodeLabelChanged}
+        onNodesMoved={onNodesMoved}
       />
     </div>
   )

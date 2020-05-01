@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NodeId, NodeTree } from './interfaces';
-import { Plus, Edit, Trash, CaretTop } from 'react-bytesize-icons';
+import { Plus, Edit, Trash, CaretTop, Move, Reply } from 'react-bytesize-icons';
 import './Controls.scss';
 
 interface ControlsProps {
@@ -12,6 +12,7 @@ interface ControlsProps {
   onToggleEditMode: () => void;
   onNodesDeleted: () => void;
   onTriangleToggled: (newValue: boolean) => void;
+  onNodePositionsReset: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -25,17 +26,21 @@ const TOOL_DESCRIPTIONS: {[key: string]: string} = {
   add: 'Add a new parent node from the selected text or nodes. (Shortcut: Ctrl+Up)',
   edit: 'Edit the selected node. (Shortcut: F2 or Enter)',
   delete: 'Delete the selected nodes. (Shortcut: Delete or Backspace)',
-  triangle: 'Toggle triangles for the selected terminal nodes.'
+  triangle: 'Toggle triangles for the selected terminal nodes.',
+  resetPositions: 'Relocate the selected nodes to their original positions.'
 }
 
-const Controls: React.FC<ControlsProps> = ({ nodes, selectedRange, selectedNodes, onNodeAdded, onToggleEditMode: onEnterEditMode, onNodesDeleted, onTriangleToggled }) => {
+const Controls: React.FC<ControlsProps> = ({
+  nodes, selectedRange, selectedNodes,
+  onNodeAdded, onToggleEditMode, onNodesDeleted, onTriangleToggled, onNodePositionsReset
+}) => {
   const [hoveredTool, setHoveredTool] = useState<string | null>(null);
 
   const triangleToggleEnabled: boolean = !!selectedNodes && !!selectedNodes.size && Array.from(selectedNodes).every(nodeId => nodes[nodeId].slice);
   const triangleToggleChecked: boolean = triangleToggleEnabled && Array.from(selectedNodes as Set<NodeId>).some(nodeId => nodes[nodeId].triangle);
 
   const ToolbarButton: React.FC<ToolbarButtonProps> = ({ toolName, onClick, disabled, active, children }) =>
-    <button type="button" onClick={onClick} disabled={disabled} onMouseEnter={() => setHoveredTool(toolName)} onMouseLeave={() => setHoveredTool(null)} className={active ? 'active' : ''}>
+    <button type="button" id={`button-${toolName}`} onClick={onClick} disabled={disabled} onMouseEnter={() => setHoveredTool(toolName)} onMouseLeave={() => setHoveredTool(null)} className={active ? 'active' : ''}>
       {children}
     </button>;
 
@@ -44,7 +49,7 @@ const Controls: React.FC<ControlsProps> = ({ nodes, selectedRange, selectedNodes
       <ToolbarButton toolName="add" onClick={onNodeAdded} disabled={!selectedRange && (!selectedNodes || !selectedNodes.size)}>
         <Plus />
       </ToolbarButton>
-      <ToolbarButton toolName="edit" onClick={onEnterEditMode} disabled={!selectedNodes || !selectedNodes.size}>
+      <ToolbarButton toolName="edit" onClick={onToggleEditMode} disabled={!selectedNodes || !selectedNodes.size}>
         <Edit />
       </ToolbarButton>
       <ToolbarButton toolName="delete" onClick={onNodesDeleted} disabled={!selectedNodes || !selectedNodes.size}>
@@ -55,6 +60,10 @@ const Controls: React.FC<ControlsProps> = ({ nodes, selectedRange, selectedNodes
         disabled={!triangleToggleEnabled} active={triangleToggleChecked}
       >
         <CaretTop />
+      </ToolbarButton>
+      <ToolbarButton toolName="resetPositions" onClick={() => onNodePositionsReset()} disabled={!selectedNodes || !selectedNodes.size}>
+        <Move />
+        <Reply />
       </ToolbarButton>
       {hoveredTool && <div className="tooltip">
         {TOOL_DESCRIPTIONS[hoveredTool]}

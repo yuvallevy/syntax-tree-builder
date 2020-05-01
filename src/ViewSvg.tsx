@@ -14,6 +14,7 @@ interface ViewSvgProps {
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
   onToggleEditMode: () => void;
   onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
+  onNodesMoved: (dx: number, dy: number) => void;
   ref: React.Ref<HTMLDivElement>;
 }
 
@@ -43,8 +44,8 @@ const triangleToSlice = (node: PositionedNodeData) => node.slice && node.sliceXS
   className="tree-link"
   d={svgPathD(
     [node.x, node.y + LABEL_HEIGHT],
-    [node.sliceXSpan[0], node.y + LEVEL_HEIGHT],
-    [node.sliceXSpan[1], node.y + LEVEL_HEIGHT]
+    [node.sliceXSpan[0], node.naturalY + LEVEL_HEIGHT],
+    [node.sliceXSpan[1], node.naturalY + LEVEL_HEIGHT]
   )}
 />
 
@@ -56,8 +57,8 @@ const lineToSlice = (node: PositionedNodeData) => node.slice && <line
   className="tree-link"
   x1={node.x}
   y1={node.y + LABEL_HEIGHT}
-  x2={node.x}
-  y2={node.y + LEVEL_HEIGHT}
+  x2={node.naturalX}
+  y2={node.naturalY + LEVEL_HEIGHT}
 />
 
 const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({

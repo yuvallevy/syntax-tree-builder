@@ -46,6 +46,29 @@ $toolbar-height: 37px;
       color: $active-color;
       stroke-width: 2px;
     }
+    // Individual button tweaking
+    &#button-triangle {
+      svg {
+        position: relative;
+        top: 2px;
+      }
+    }
+    &#button-resetPositions {
+      position: relative;
+      svg {
+        position: absolute;
+        width: 19px;
+        height: 19px;
+      }
+      #i-move {
+        top: 1px;
+        right: 1px;
+      }
+      #i-reply {
+        left: 1px;
+        bottom: 1px;
+      }
+    }
   }
   svg {
     stroke-width: 1px;

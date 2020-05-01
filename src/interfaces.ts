@@ -6,6 +6,8 @@ export interface NodeData {
   slice?: [number, number];
   triangle?: boolean;
   children?: NodeId[];
+  offsetX: number;
+  offsetY: number;
 }
 
 export interface NodeTree {
@@ -15,6 +17,8 @@ export interface NodeTree {
 export interface PositionedNodeData extends NodeData {
   x: number;
   y: number;
+  naturalX: number;
+  naturalY: number;
   sliceXSpan?: [number, number];
 }
 

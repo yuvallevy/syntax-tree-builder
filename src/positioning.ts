@@ -89,7 +89,7 @@ const computeSliceXSpan = (sentence: string, start: number, end: number): [numbe
  * @return {number}            Node's target X position.
  */
 const computeXByChildren = (nodes: NodeTree, sentence: string, children: NodeId[]) =>
-  mean(children.map(childId => getNodeX(nodes, sentence, nodes[childId])));
+  mean(children.map(childId => getNodeX(nodes, sentence, nodes[childId]) + nodes[childId].offsetX));
 
 /**
  * Calculates the X position of the given node.
@@ -110,7 +110,7 @@ const computeNodeX = (nodes: NodeTree, sentence: string, node: NodeData) =>
  * @return {number}            Node's target Y position.
  */
 const computeYByChildren = (nodes: NodeTree, children: NodeId[]) =>
-  Math.min(...children.map(childId => getNodeY(nodes, nodes[childId]))) - LEVEL_HEIGHT;
+  Math.min(...children.map(childId => getNodeY(nodes, nodes[childId]) + nodes[childId].offsetY)) - LEVEL_HEIGHT;
 
 /**
  * Calculates the Y position of the given node.
@@ -204,8 +204,10 @@ export const computeNodePositions = (nodes: NodeTree, sentence: string): Positio
     ...positionedNodes,
     [id]: {
       ...node,
-      x: getNodeX(nodes, sentence, node),
-      y: getNodeY(nodes, node),
+      x: getNodeX(nodes, sentence, node) + node.offsetX,
+      y: getNodeY(nodes, node) + node.offsetY,
+      naturalX: getNodeX(nodes, sentence, node),
+      naturalY: getNodeY(nodes, node),
       sliceXSpan: getNodeXSpan(sentence, node)
     }
   }), {});

@@ -6,15 +6,15 @@ jest.mock('./measureText');
 const sentence = 'Colorless green ideas sleep furiously.';
 
 const nodeTree: NodeTree = {
-  'KNICuEVF|knF': { id: 'KNICuEVF|knF', label: 'Adj', slice: [0, 9], triangle: false },
-  'M}E@bxcClTOC': { id: 'M}E@bxcClTOC', label: 'Adj', slice: [10, 15], triangle: false },
-  'qNC_Mmj}dExD': { id: 'qNC_Mmj}dExD', label: 'N', slice: [16, 21], triangle: false },
-  'h@a@YTJjySzv': { id: 'h@a@YTJjySzv', label: 'V', slice: [22, 27], triangle: false },
-  'jrleAVGiWcDd': { id: 'jrleAVGiWcDd', label: 'Adv', slice: [28, 37], triangle: false },
-  'VLO[qaqYRY{Q': { id: 'VLO[qaqYRY{Q', label: 'NP', children: ['M}E@bxcClTOC', 'qNC_Mmj}dExD'] },
-  'OZZVyJJI|rrg': { id: 'OZZVyJJI|rrg', label: 'NP', children: ['KNICuEVF|knF', 'VLO[qaqYRY{Q'] },
-  'o{[romK`VyJk': { id: 'o{[romK`VyJk', label: 'VP', children: ['h@a@YTJjySzv', 'jrleAVGiWcDd'] },
-  'tKNDBviXDVwb': { id: 'tKNDBviXDVwb', label: 'S', children: ['OZZVyJJI|rrg', 'o{[romK`VyJk'] },
+  'KNICuEVF|knF': { id: 'KNICuEVF|knF', label: 'Adj', slice: [0, 9], triangle: false, offsetX: 0, offsetY: 0 },
+  'M}E@bxcClTOC': { id: 'M}E@bxcClTOC', label: 'Adj', slice: [10, 15], triangle: false, offsetX: 0, offsetY: 0 },
+  'qNC_Mmj}dExD': { id: 'qNC_Mmj}dExD', label: 'N', slice: [16, 21], triangle: false, offsetX: 0, offsetY: 0 },
+  'h@a@YTJjySzv': { id: 'h@a@YTJjySzv', label: 'V', slice: [22, 27], triangle: false, offsetX: 0, offsetY: 0 },
+  'jrleAVGiWcDd': { id: 'jrleAVGiWcDd', label: 'Adv', slice: [28, 37], triangle: false, offsetX: 0, offsetY: 0 },
+  'VLO[qaqYRY{Q': { id: 'VLO[qaqYRY{Q', label: 'NP', children: ['M}E@bxcClTOC', 'qNC_Mmj}dExD'], offsetX: 0, offsetY: 0 },
+  'OZZVyJJI|rrg': { id: 'OZZVyJJI|rrg', label: 'NP', children: ['KNICuEVF|knF', 'VLO[qaqYRY{Q'], offsetX: 0, offsetY: 0 },
+  'o{[romK`VyJk': { id: 'o{[romK`VyJk', label: 'VP', children: ['h@a@YTJjySzv', 'jrleAVGiWcDd'], offsetX: 0, offsetY: 0 },
+  'tKNDBviXDVwb': { id: 'tKNDBviXDVwb', label: 'S', children: ['OZZVyJJI|rrg', 'o{[romK`VyJk'], offsetX: 0, offsetY: 0 },
 };
 
 const positionedNodeTree: PositionedNodeTree = {
@@ -29,9 +29,32 @@ const positionedNodeTree: PositionedNodeTree = {
   'tKNDBviXDVwb': { ...nodeTree['tKNDBviXDVwb'], x: 135.2734375, y: -160 },
 };
 
+const sentenceWithOffsets = 'John arrived.';
+
+const nodeTreeWithOffsets: NodeTree = {
+  'KNICuEVF|knF': { id: 'KNICuEVF|knF', label: 'N', slice: [0, 4], triangle: false, offsetX: 0, offsetY: 0 },
+  'M}E@bxcClTOC': { id: 'M}E@bxcClTOC', label: 'V', slice: [5, 12], triangle: false, offsetX: 0, offsetY: 0 },
+  'qNC_Mmj}dExD': { id: 'qNC_Mmj}dExD', label: 'NP', children: ['KNICuEVF|knF'], offsetX: 4, offsetY: 0 },
+  'h@a@YTJjySzv': { id: 'h@a@YTJjySzv', label: 'VP', children: ['M}E@bxcClTOC'], offsetX: -4, offsetY: 0 },
+  'jrleAVGiWcDd': { id: 'jrleAVGiWcDd', label: 'S', children: ['qNC_Mmj}dExD', 'h@a@YTJjySzv'], offsetX: 0, offsetY: 10 },
+};
+
+const positionedNodeTreeWithOffsets: PositionedNodeTree = {
+  'KNICuEVF|knF': { ...nodeTreeWithOffsets['KNICuEVF|knF'], x: 16.609375, sliceXSpan: [0, 33.21875], y: -40 },
+  'M}E@bxcClTOC': { ...nodeTreeWithOffsets['M}E@bxcClTOC'], x: 61.9140625, sliceXSpan: [37.609375, 86.21875], y: -40 },
+  'qNC_Mmj}dExD': { ...nodeTreeWithOffsets['qNC_Mmj}dExD'], x: 20.609375, y: -80 },
+  'h@a@YTJjySzv': { ...nodeTreeWithOffsets['h@a@YTJjySzv'], x: 57.9140625, y: -80 },
+  'jrleAVGiWcDd': { ...nodeTreeWithOffsets['jrleAVGiWcDd'], x: 39.26171875, y: -110 },
+};
+
 describe('node positioning', () => {
   it('computes X and Y positions of nodes', () => {
     expect(computeNodePositions(nodeTree, sentence)).toMatchObject(positionedNodeTree);
+  });
+
+  it('computes X and Y positions of nodes with offsets', () => {
+    expect(computeNodePositions(nodeTreeWithOffsets, sentenceWithOffsets))
+      .toMatchObject(positionedNodeTreeWithOffsets);
   });
 });
 
