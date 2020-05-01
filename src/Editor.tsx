@@ -34,6 +34,11 @@ const initialState: EditorState = {
   editingNode: null
 };
 
+/**
+ * Returns what the definition of a new node should be, taking into account the sentence and selection.
+ * Used for some convenient shortcuts, such as trimming spaces within the selection or allowing the user to add a node
+ * corresponding to a word without having to select the whole word.
+ */
 const deriveNodeDefinition = (sentence: string, selectedNodes: Set<NodeId> | null, selectedRange: [number, number] | null) => {
   if (selectedNodes) {
     return {

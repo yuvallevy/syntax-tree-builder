@@ -48,27 +48,43 @@ const View: React.FC<ViewProps> = ({
   const [boxSelectionEnd, setBoxSelectionEnd] = useState<[number, number] | null>();
   const viewSvgRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Whenever the sentence changes, recalculate the width of the tree.
+   */
   useEffect(() => {
     setTreeWidth(computeTreeWidth(sentence));
   }, [sentence]);
 
+  /**
+   * Whenever the tree or sentence changes, recalculate the positions of the nodes and the height of the tree.
+   */
   useEffect(() => {
     const newPositionedNodes = computeNodePositions(nodes, sentence);
     setPositionedNodes(newPositionedNodes);
     setTreeHeight(computeTreeHeight(newPositionedNodes));
   }, [nodes, sentence]);
 
+  /**
+   * Handler called when the sentence changes.
+   */
   const onInputChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     onSentenceChanged(event.target.value);
   };
 
+  /**
+   * Handler called when a selection is made in the sentence,
+   * or the position of the cursor in the text box changes.
+   */
   const onInputSelectionChanged = (event: React.SyntheticEvent<HTMLInputElement>): void => {
     const { selectionStart, selectionEnd } = event.currentTarget;
     if (selectionStart !== null && selectionEnd !== null) {
       onTextSelected(selectionStart, selectionEnd);
     }
-  }
+  };
 
+  /**
+   * Starts a new box selection, setting the first corner to the current mouse position.
+   */
   const initiateBoxSelection = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (viewSvgRef.current && ((event.target as Element).className === 'View' || (event.target as Element).tagName === 'svg')) {
       onSelectionCleared();
@@ -78,6 +94,10 @@ const View: React.FC<ViewProps> = ({
     }
   };
   
+  /**
+   * Updates the box selection started in initiateBoxSelection(),
+   * setting the second corner to the current mouse position.
+   */
   const updateBoxSelection = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (selecting && viewSvgRef.current) {
       event.preventDefault();
@@ -85,11 +105,18 @@ const View: React.FC<ViewProps> = ({
     }
   };
 
+  /**
+   * Receives a pair of absolute window coordinates, and returns a new pair translated to be relative to the positions
+   * of the nodes (as defined in the positionedNodes object).
+   */
   const windowCoordsToTreeCoords = (coords: [number, number]): [number, number] => [
     coords[0] - viewSvgRef.current!.offsetLeft - TREE_X_MARGIN,
     coords[1] - viewSvgRef.current!.offsetTop - treeHeight
   ];
   
+  /**
+   * Completes the box selection, selecting all nodes within the selection box and clearing it.
+   */
   const finishBoxSelection = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     setSelecting(false);
     if (viewSvgRef.current && boxSelectionStart && boxSelectionEnd) {
@@ -103,6 +130,9 @@ const View: React.FC<ViewProps> = ({
     }
   };
 
+  /**
+   * Renders the sentence text box.
+   */
   const renderInput = (): React.ReactNode => {
     return (
       <input
@@ -114,6 +144,10 @@ const View: React.FC<ViewProps> = ({
     );
   };
 
+  /**
+   * Renders the current selection box, if it is defined.
+   * The selection box is controlled by the initiateBoxSelection, updateBoxSelection and finishBoxSelection functions.
+   */
   const renderSelectionBox = (): React.ReactNode => {
     if (selecting && boxSelectionStart && boxSelectionEnd) {
       const [x1, y1] = boxSelectionStart;

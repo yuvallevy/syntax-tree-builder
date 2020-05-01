@@ -86,6 +86,9 @@ const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
     }
   }
 
+  /**
+   * Renders the tree nodes as SVG elements.
+   */
   const renderNodes = () => Object.entries(positionedNodes).map(
     ([nodeId, node]) => editingNode !== nodeId && (
       <g
@@ -113,12 +116,18 @@ const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
     )
   );
 
+  /**
+   * Renders the links between nodes as SVG elements.
+   */
   const renderLinks = () => flatMap(Object.values(positionedNodes),
     (node: PositionedNodeData) => node.children
       ? node.children.map(childId => lineToChild(node, positionedNodes[childId]))
       : node.triangle ? triangleToSlice(node) : lineToSlice(node)
   );
 
+  /**
+   * Renders a text field located at the node currently being edited, if one is defined.
+   */
   const renderEditingNode = (): React.ReactNode => {
     const node: PositionedNodeData | null = editingNode ? positionedNodes[editingNode] : null;
     return node && <input
