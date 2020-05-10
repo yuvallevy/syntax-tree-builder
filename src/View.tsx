@@ -16,7 +16,7 @@ interface ViewProps {
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
   onSelectionCleared: () => void;
   onToggleEditMode: () => void;
-  onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
+  onNodeLabelChanged: (newValue: string) => void;
   onNodesMoved: (dx: number, dy: number) => void;
 }
 

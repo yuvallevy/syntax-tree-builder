@@ -14,7 +14,7 @@ interface ViewSvgProps {
   treeXMargin: number;
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
   onToggleEditMode: () => void;
-  onNodeLabelChanged: (nodeId: NodeId, newValue: string) => void;
+  onNodeLabelChanged: (newValue: string) => void;
   onNodesMoved: (dx: number, dy: number) => void;
   ref: React.Ref<HTMLDivElement>;
 }
@@ -84,7 +84,7 @@ const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
   const setNodeLabel = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { nodeId } = event.currentTarget.dataset;
     if (nodeId) {
-      onNodeLabelChanged(nodeId, event.currentTarget.value);
+      onNodeLabelChanged(event.currentTarget.value);
     }
   }
 
