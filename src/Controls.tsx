@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NodeId, NodeTree } from './interfaces';
-import { Plus, Edit, Trash, CaretTop, Move, Reply } from 'react-bytesize-icons';
+import { Plus, Edit, Trash, CaretTop, CaretBottom, Move, Reply } from 'react-bytesize-icons';
 import './Controls.scss';
 
 interface ControlsProps {
@@ -8,8 +8,10 @@ interface ControlsProps {
   sentence: string;
   selectedRange: [number, number] | null;
   selectedNodes: Set<NodeId> | null;
+  adoptingNode: NodeId | null;
   onNodeAdded: () => void;
   onToggleEditMode: () => void;
+  onToggleAdoptMode: () => void;
   onNodesDeleted: () => void;
   onTriangleToggled: (newValue: boolean) => void;
   onNodePositionsReset: () => void;
@@ -27,12 +29,13 @@ const TOOL_DESCRIPTIONS: {[key: string]: string} = {
   edit: 'Edit the selected node. (Shortcut: F2 or Enter)',
   delete: 'Delete the selected nodes. (Shortcut: Delete or Backspace)',
   triangle: 'Toggle triangles for the selected terminal nodes.',
-  resetPositions: 'Relocate the selected nodes to their original positions.'
+  resetPositions: 'Relocate the selected nodes to their original positions.',
+  adopt: 'Adopt one or more other nodes as children of the selected node.'
 }
 
 const Controls: React.FC<ControlsProps> = ({
-  nodes, selectedRange, selectedNodes,
-  onNodeAdded, onToggleEditMode, onNodesDeleted, onTriangleToggled, onNodePositionsReset
+  nodes, selectedRange, selectedNodes, adoptingNode,
+  onNodeAdded, onToggleEditMode, onToggleAdoptMode, onNodesDeleted, onTriangleToggled, onNodePositionsReset
 }) => {
   const [hoveredTool, setHoveredTool] = useState<string | null>(null);
 
@@ -54,6 +57,13 @@ const Controls: React.FC<ControlsProps> = ({
       </ToolbarButton>
       <ToolbarButton toolName="delete" onClick={onNodesDeleted} disabled={!selectedNodes || !selectedNodes.size}>
         <Trash />
+      </ToolbarButton>
+      <ToolbarButton toolName="adopt"
+        onClick={() => onToggleAdoptMode()}
+        disabled={(!selectedNodes || !selectedNodes.size) && !adoptingNode}
+        active={!!adoptingNode}
+      >
+        <CaretBottom />
       </ToolbarButton>
       <ToolbarButton toolName="triangle"
         onClick={() => onTriangleToggled(!triangleToggleChecked)}

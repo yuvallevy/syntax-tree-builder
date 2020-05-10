@@ -13,6 +13,7 @@ interface EditorState {
   sentence: string;
   selectedRange: [number, number] | null;
   selectedNodes: Set<NodeId> | null;
+  adoptingNode: NodeId | null,
   editingNode: NodeId | null;
 }
 
@@ -22,6 +23,7 @@ type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'clearSelection'; }
   | { type: 'addNode'; }
   | { type: 'toggleEditMode'; }
+  | { type: 'toggleAdoptMode'; }
   | { type: 'deleteNodes'; }
   | { type: 'toggleTriangle'; newValue: boolean; }
   | { type: 'setLabel'; nodeId: NodeId; newValue: string; }
@@ -33,6 +35,7 @@ const initialState: EditorState = {
   sentence: SENTENCE,
   selectedRange: null,
   selectedNodes: null,
+  adoptingNode: null,
   editingNode: null
 };
 
@@ -73,6 +76,7 @@ const deriveNodeDefinition = (sentence: string, selectedNodes: Set<NodeId> | nul
       triangle: sentence.substring(...desiredRange).includes(' ')
     };
   }
+  return {};
 };
 
 const reducer = (state: EditorState, action: EditorAction): EditorState => {
@@ -136,6 +140,38 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
         ...state,
         editingNode: state.editingNode === newEditingNode ? null : newEditingNode
       };
+    case 'toggleAdoptMode':
+      if (!state.adoptingNode) {
+        // starting adoption
+        if (!state.selectedNodes) {
+          return state;
+        }
+        return {
+          ...state,
+          selectedNodes: null,
+          adoptingNode: Array.from(state.selectedNodes).pop() || null,
+          editingNode: null
+        };
+      } else {
+        // finished adoption
+        const newNodeDef = deriveNodeDefinition(state.sentence, state.selectedNodes, state.selectedRange);
+        if (newNodeDef.children && state.nodes[state.adoptingNode].children) {
+          newNodeDef.children = state.nodes[state.adoptingNode].children!.concat(newNodeDef.children)
+        }
+        return {
+          ...state,
+          nodes: {
+            ...state.nodes,
+            [state.adoptingNode]: {
+              ...state.nodes[state.adoptingNode],
+              ...newNodeDef
+            }
+          },
+          selectedNodes: null,
+          adoptingNode: null,
+          editingNode: null
+        };
+      }
     case 'deleteNodes':
       if (!state.selectedNodes) {
         return state;
@@ -226,6 +262,7 @@ const Editor: React.FC = () => {
   const onSelectionCleared = () => dispatch({ type: 'clearSelection' });
   const onNodeAdded = () => dispatch({ type: 'addNode' });
   const onToggleEditMode = () => dispatch({ type: 'toggleEditMode' });
+  const onToggleAdoptMode = () => dispatch({ type: 'toggleAdoptMode' });
   const onNodesDeleted = () => dispatch({ type: 'deleteNodes' })
   const onTriangleToggled = (newValue: boolean) => dispatch({ type: 'toggleTriangle', newValue })
   const onNodeLabelChanged = (nodeId: NodeId, newValue: string) => dispatch({ type: 'setLabel', nodeId, newValue });
@@ -264,17 +301,20 @@ const Editor: React.FC = () => {
         sentence={state.sentence}
         selectedRange={state.selectedRange}
         selectedNodes={state.selectedNodes}
+        adoptingNode={state.adoptingNode}
         onNodeAdded={onNodeAdded}
         onToggleEditMode={onToggleEditMode}
         onNodesDeleted={onNodesDeleted}
         onTriangleToggled={onTriangleToggled}
         onNodePositionsReset={onNodePositionsReset}
+        onToggleAdoptMode={onToggleAdoptMode}
       />
       <View
         nodes={state.nodes}
         sentence={state.sentence}
         selectedNodes={state.selectedNodes}
         editingNode={state.editingNode}
+        adoptingNode={state.adoptingNode}
         onSentenceChanged={onSentenceChanged}
         onTextSelected={onTextSelected}
         onNodesSelected={onNodesSelected}

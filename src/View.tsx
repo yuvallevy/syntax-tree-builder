@@ -10,6 +10,7 @@ interface ViewProps {
   sentence: string;
   selectedNodes: Set<NodeId> | null;
   editingNode: NodeId | null;
+  adoptingNode: NodeId | null;
   onSentenceChanged: (newSentence: string) => void;
   onTextSelected: (start: number, end: number) => void;
   onNodesSelected: (nodeIds: NodeId[], multi: boolean) => void;
@@ -38,7 +39,7 @@ const getInteractionPos = (event: React.MouseEvent | React.TouchEvent): [number,
     : [0, 0];
 
 const View: React.FC<ViewProps> = ({
-  nodes, sentence, selectedNodes, editingNode,
+  nodes, sentence, selectedNodes, editingNode, adoptingNode,
   onSentenceChanged, onTextSelected, onNodesSelected, onSelectionCleared, onToggleEditMode, onNodeLabelChanged,
   onNodesMoved
 }) => {
@@ -185,6 +186,7 @@ const View: React.FC<ViewProps> = ({
       {!isEmpty(nodes) && <ViewSvg
         selectedNodes={selectedNodes}
         editingNode={editingNode}
+        adoptingNode={adoptingNode}
         positionedNodes={positionedNodes}
         treeWidth={treeWidth}
         treeHeight={treeHeight}

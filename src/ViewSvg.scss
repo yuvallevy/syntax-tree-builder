@@ -43,6 +43,12 @@ $active-edit-box-color: #62b0f4;
     stroke-dasharray: 4 4;
     animation: 0.5s infinite linear marching-ants;
   }
+  &.secondary-selected > rect {
+    stroke: firebrick;
+    stroke-width: 1;
+    fill: firebrick;
+    animation: 1s infinite linear blink-fill;
+  }
 }
 
 @keyframes marching-ants {
@@ -51,5 +57,17 @@ $active-edit-box-color: #62b0f4;
   }
   100% {
     stroke-dashoffset: -8px;
+  }
+}
+
+@keyframes blink-fill {
+  0% {
+    fill-opacity: 0;
+  }
+  50% {
+    fill-opacity: 0.2;
+  }
+  100% {
+    fill-opacity: 0;
   }
 }
