@@ -42,7 +42,8 @@ export const initialState: EditorState = {
 const deriveNodeDefinition = (sentence: string, selectedNodes: Set<NodeId> | null, selectedRange: [number, number] | null) => {
   if (selectedNodes) {
     return {
-      children: Array.from(selectedNodes)
+      children: Array.from(selectedNodes),
+      slice: undefined
     };
   }
   if (selectedRange) {
@@ -68,20 +69,59 @@ const deriveNodeDefinition = (sentence: string, selectedNodes: Set<NodeId> | nul
     }
     return {
       slice: desiredRange,
-      triangle: sentence.substring(...desiredRange).includes(' ')
+      triangle: sentence.substring(...desiredRange).includes(' '),
+      children: undefined
     };
   }
   return {};
 };
 
-const selectText = (state: EditorState, start: number, end: number): EditorState => ({
-  ...state,
-  selectedRange: state.sentence ? [start, end] : null,
-  selectedNodes: null,
-  editingNode: null
-});
+const startAdoption = (state: EditorState): EditorState => {
+  if (!state.selectedNodes) {
+    return state;
+  }
+  return {
+    ...state,
+    selectedNodes: null,
+    adoptingNode: Array.from(state.selectedNodes).pop() || null,
+    editingNode: null
+  };
+};
 
-const selectNode = (state: EditorState, nodeIds: NodeId[], multi: boolean): EditorState => {
+const stopAdoption = (state: EditorState): EditorState => ({ ...state, adoptingNode: null });
+
+const completeAdoption = (state: EditorState, nodeIds: NodeId[] | null, range: [number, number] | null): EditorState => {
+  const adoptingNode = state.adoptingNode as string;
+  const newNodeDef = deriveNodeDefinition(state.sentence, nodeIds && new Set(nodeIds), range);
+  if (newNodeDef.children && state.nodes[adoptingNode].children) {
+    newNodeDef.children = state.nodes[adoptingNode].children!.concat(newNodeDef.children)
+  }
+  return {
+    ...state,
+    nodes: {
+      ...state.nodes,
+      [adoptingNode]: {
+        ...state.nodes[adoptingNode],
+        ...newNodeDef
+      }
+    },
+    selectedNodes: null,
+    adoptingNode: null,
+    editingNode: null
+  };
+}
+
+const selectText = (state: EditorState, start: number, end: number): EditorState =>
+  state.adoptingNode
+    ? completeAdoption(state, null, [start, end])
+    : ({
+      ...state,
+      selectedRange: state.sentence ? [start, end] : null,
+      selectedNodes: null,
+      editingNode: null
+    });
+
+const setNodeSelected = (state: EditorState, nodeIds: NodeId[], multi: boolean): EditorState => {
   const curSelection: Set<NodeId> | null = state.selectedNodes;
   let newSelection;
   if (multi && curSelection) {
@@ -98,7 +138,12 @@ const selectNode = (state: EditorState, nodeIds: NodeId[], multi: boolean): Edit
     selectedNodes: newSelection,
     editingNode: null
   };
-};
+}
+
+const selectNode = (state: EditorState, nodeIds: NodeId[], multi: boolean): EditorState =>
+  state.adoptingNode
+    ? completeAdoption(state, nodeIds, null)
+    : setNodeSelected(state, nodeIds, multi);
 
 const addNode = (state: EditorState): EditorState => {
   if (!state.selectedRange && !state.selectedNodes) {
@@ -133,41 +178,8 @@ const toggleEditMode = (state: EditorState): EditorState => {
   };
 };
 
-const startAdoption = (state: EditorState): EditorState => {
-  if (!state.selectedNodes) {
-    return state;
-  }
-  return {
-    ...state,
-    selectedNodes: null,
-    adoptingNode: Array.from(state.selectedNodes).pop() || null,
-    editingNode: null
-  };
-};
-
-const completeAdoption = (state: EditorState): EditorState => {
-  const adoptingNode = state.adoptingNode as string;
-  const newNodeDef = deriveNodeDefinition(state.sentence, state.selectedNodes, state.selectedRange);
-  if (newNodeDef.children && state.nodes[adoptingNode].children) {
-    newNodeDef.children = state.nodes[adoptingNode].children!.concat(newNodeDef.children)
-  }
-  return {
-    ...state,
-    nodes: {
-      ...state.nodes,
-      [adoptingNode]: {
-        ...state.nodes[adoptingNode],
-        ...newNodeDef
-      }
-    },
-    selectedNodes: null,
-    adoptingNode: null,
-    editingNode: null
-  };
-}
-
 const toggleAdoptMode = (state: EditorState): EditorState =>
-  state.adoptingNode ? completeAdoption(state) : startAdoption(state);
+  state.adoptingNode ? stopAdoption(state) : startAdoption(state);
 
 const deleteNodes = (state: EditorState): EditorState => {
   if (!state.selectedNodes) {
