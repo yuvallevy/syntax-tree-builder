@@ -49,6 +49,18 @@ $active-edit-box-color: #62b0f4;
     fill: firebrick;
     animation: 1s infinite linear blink-fill;
   }
+  &.unselectable {
+    text {
+      fill-opacity: 0.6;
+      text-decoration: line-through;
+    }
+    &:hover {
+      cursor: not-allowed;
+      rect {
+        fill: transparent;
+      }
+    }
+  }
 }
 
 @keyframes marching-ants {

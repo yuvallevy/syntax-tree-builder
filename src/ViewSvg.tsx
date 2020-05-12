@@ -6,6 +6,7 @@ import './ViewSvg.scss';
 
 interface ViewSvgProps {
   selectedNodes: Set<NodeId> | null;
+  unselectableNodes: Set<NodeId> | null;
   editingNode: NodeId | null;
   adoptingNode: NodeId | null;
   positionedNodes: PositionedNodeTree;
@@ -63,7 +64,7 @@ const lineToSlice = (node: PositionedNodeData) => node.slice && <line
 />
 
 const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
-  selectedNodes, editingNode, adoptingNode, positionedNodes, treeWidth, treeHeight, treeXMargin,
+  selectedNodes, unselectableNodes, editingNode, adoptingNode, positionedNodes, treeWidth, treeHeight, treeXMargin,
   onNodesSelected, onToggleEditMode, onNodeLabelChanged
 }, ref) => {
   /**
@@ -100,7 +101,9 @@ const ViewSvg: React.ForwardRefRenderFunction<HTMLDivElement, ViewSvgProps> = ({
             ? 'node selected'
             : adoptingNode === nodeId
               ? 'node secondary-selected'
-              : 'node'
+              : unselectableNodes?.has(nodeId)
+                ? 'node unselectable'
+                : 'node'
         }
       >
         <rect

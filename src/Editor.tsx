@@ -67,6 +67,7 @@ const Editor: React.FC = () => {
         nodes={state.nodes}
         sentence={state.sentence}
         selectedNodes={state.selectedNodes}
+        unselectableNodes={state.unselectableNodes}
         editingNode={state.editingNode}
         adoptingNode={state.adoptingNode}
         onSentenceChanged={onSentenceChanged}

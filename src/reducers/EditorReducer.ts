@@ -1,6 +1,6 @@
-import { NodeId, NodeTree } from '../interfaces';
+import { NodeId, NodeTree, NodeData } from '../interfaces';
 import { SENTENCE, TREE } from '../examples';
-import { without, chain } from 'lodash';
+import { flatMap, without, chain } from 'lodash';
 import generateId from '../generateId';
 
 interface EditorState {
@@ -8,6 +8,7 @@ interface EditorState {
   sentence: string;
   selectedRange: [number, number] | null;
   selectedNodes: Set<NodeId> | null;
+  unselectableNodes: Set<NodeId> | null;
   adoptingNode: NodeId | null,
   editingNode: NodeId | null;
 }
@@ -30,9 +31,26 @@ export const initialState: EditorState = {
   sentence: SENTENCE,
   selectedRange: null,
   selectedNodes: null,
+  unselectableNodes: null,
   adoptingNode: null,
   editingNode: null
 };
+
+/**
+ * Returns the IDs of all nodes that are descendants of other nodes (i.e. not roots).
+ */
+const getNodesWithParents = (nodes: NodeTree): NodeId[] =>
+  flatMap(Object.values(nodes), (nodeData: NodeData) => nodeData.children || []);
+
+const isChild = (nodes: NodeTree, parentId: NodeId, childId: NodeId): boolean =>
+  !!nodes[parentId].children?.includes(childId)
+
+const isDescendant = (nodes: NodeTree, ancestorId: NodeId, descendantId: NodeId): boolean =>
+  isChild(nodes, ancestorId, descendantId)
+    || !!(nodes[ancestorId].children?.filter(childId => isDescendant(nodes, childId, descendantId)).length);
+
+const getAncestors = (nodes: NodeTree, descendantId: NodeId): NodeId[] =>
+  Object.keys(nodes).filter(nodeId => isDescendant(nodes, nodeId, descendantId));
 
 /**
  * Returns what the definition of a new node should be, taking into account the sentence and selection.
@@ -80,15 +98,19 @@ const startAdoption = (state: EditorState): EditorState => {
   if (!state.selectedNodes) {
     return state;
   }
+  const adoptingNode = Array.from(state.selectedNodes).pop() || null;
+  const adoptableNodes = adoptingNode ?
+    new Set(getNodesWithParents(state.nodes).concat(getAncestors(state.nodes, adoptingNode))) : null;
   return {
     ...state,
     selectedNodes: null,
-    adoptingNode: Array.from(state.selectedNodes).pop() || null,
+    unselectableNodes: adoptableNodes,
+    adoptingNode,
     editingNode: null
   };
 };
 
-const stopAdoption = (state: EditorState): EditorState => ({ ...state, adoptingNode: null });
+const stopAdoption = (state: EditorState): EditorState => ({ ...state, unselectableNodes: null, adoptingNode: null });
 
 const completeAdoption = (state: EditorState, nodeIds: NodeId[] | null, range: [number, number] | null): EditorState => {
   const adoptingNode = state.adoptingNode as string;
@@ -106,6 +128,7 @@ const completeAdoption = (state: EditorState, nodeIds: NodeId[] | null, range: [
       }
     },
     selectedNodes: null,
+    unselectableNodes: null,
     adoptingNode: null,
     editingNode: null
   };
@@ -140,10 +163,14 @@ const setNodeSelected = (state: EditorState, nodeIds: NodeId[], multi: boolean):
   };
 }
 
-const selectNode = (state: EditorState, nodeIds: NodeId[], multi: boolean): EditorState =>
-  state.adoptingNode
-    ? completeAdoption(state, nodeIds, null)
-    : setNodeSelected(state, nodeIds, multi);
+const selectNode = (state: EditorState, nodeIds: NodeId[], multi: boolean): EditorState => {
+  const selectableNodeIds = nodeIds.filter(nodeId => !(state.unselectableNodes?.has(nodeId)));
+  return selectableNodeIds.length
+    ? state.adoptingNode
+      ? completeAdoption(state, selectableNodeIds, null)
+      : setNodeSelected(state, selectableNodeIds, multi)
+    : state;
+}
 
 const addNode = (state: EditorState): EditorState => {
   if (!state.selectedRange && !state.selectedNodes) {
