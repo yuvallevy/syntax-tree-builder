@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { NodeId, NodeTree } from './interfaces';
-import { Plus, Edit, Trash, CaretTop, CaretBottom, Move, Reply } from 'react-bytesize-icons';
+import { Plus, Edit, Trash, CaretTop, Move, Reply } from 'react-bytesize-icons';
 import './Controls.scss';
+import { Adopt } from './icons';
 
 interface ControlsProps {
   nodes: NodeTree;
@@ -63,7 +64,7 @@ const Controls: React.FC<ControlsProps> = ({
         disabled={(!selectedNodes || !selectedNodes.size) && !adoptingNode}
         active={!!adoptingNode}
       >
-        <CaretBottom />
+        <Adopt />
       </ToolbarButton>
       <ToolbarButton toolName="triangle"
         onClick={() => onTriangleToggled(!triangleToggleChecked)}
