@@ -17,3 +17,15 @@ export const Adopt = () => <svg id="i-search" xmlns="http://www.w3.org/2000/svg"
     <line x1={18.7} y1={13.3} x2={21.7} y2={10.3} />
   </g>
 </svg>;
+
+export const Disown = () => <svg id="i-search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentcolor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+  <g transform="translate(7.25,-0.25)">
+    <rect x={8} y={1} width={16} height={10.5} rx={2} />
+    <rect x={8} y={21} width={16} height={10.5} rx={2} strokeDasharray="2 3" />
+    <line x1={16} y1={13} x2={16} y2={19.5} strokeDasharray="2 3" />
+  </g>
+  <g transform="translate(-7.25,-0.75)">
+    <line x1={10} y1={10} x2={22} y2={22} />
+    <line x1={10} y1={22} x2={22} y2={10} />
+  </g>
+</svg>;

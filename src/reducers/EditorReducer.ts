@@ -1,6 +1,6 @@
 import { NodeId, NodeTree, NodeData } from '../interfaces';
 import { SENTENCE, TREE } from '../examples';
-import { flatMap, without, chain } from 'lodash';
+import { flatMap, without, chain, difference } from 'lodash';
 import generateId from '../generateId';
 
 interface EditorState {
@@ -10,6 +10,7 @@ interface EditorState {
   selectedNodes: Set<NodeId> | null;
   unselectableNodes: Set<NodeId> | null;
   adoptingNode: NodeId | null,
+  disowningNode: NodeId | null,
   editingNode: NodeId | null;
 }
 
@@ -20,6 +21,7 @@ type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'addNode'; }
   | { type: 'toggleEditMode'; }
   | { type: 'toggleAdoptMode'; }
+  | { type: 'toggleDisownMode'; }
   | { type: 'deleteNodes'; }
   | { type: 'toggleTriangle'; newValue: boolean; }
   | { type: 'setLabel'; newValue: string; }
@@ -33,6 +35,7 @@ export const initialState: EditorState = {
   selectedNodes: null,
   unselectableNodes: null,
   adoptingNode: null,
+  disowningNode: null,
   editingNode: null
 };
 
@@ -91,7 +94,10 @@ const deriveNodeDefinition = (sentence: string, selectedNodes: Set<NodeId> | nul
       children: undefined
     };
   }
-  return {};
+  return {
+    slice: undefined,
+    children: undefined
+  };
 };
 
 const startAdoption = (state: EditorState): EditorState => {
@@ -99,18 +105,39 @@ const startAdoption = (state: EditorState): EditorState => {
     return state;
   }
   const adoptingNode = Array.from(state.selectedNodes).pop() || null;
-  const adoptableNodes = adoptingNode ?
+  const nonAdoptableNodes = adoptingNode ?
     new Set(getNodesWithParents(state.nodes).concat(getAncestors(state.nodes, adoptingNode))) : null;
   return {
     ...state,
     selectedNodes: null,
-    unselectableNodes: adoptableNodes,
+    unselectableNodes: nonAdoptableNodes,
     adoptingNode,
+    disowningNode: null,
+    editingNode: null
+  };
+};
+
+const startDisowning = (state: EditorState): EditorState => {
+  if (!state.selectedNodes) {
+    return state;
+  }
+  const disowningNode = Array.from(state.selectedNodes).pop() || null;
+  const nonDisownableNodes = disowningNode
+    ? new Set(difference(Object.keys(state.nodes), state.nodes[disowningNode].children || []))
+    : null;
+  return {
+    ...state,
+    selectedNodes: null,
+    unselectableNodes: nonDisownableNodes,
+    adoptingNode: null,
+    disowningNode,
     editingNode: null
   };
 };
 
 const stopAdoption = (state: EditorState): EditorState => ({ ...state, unselectableNodes: null, adoptingNode: null });
+
+const stopDisowning = (state: EditorState): EditorState => ({ ...state, unselectableNodes: null, disowningNode: null });
 
 const completeAdoption = (state: EditorState, nodeIds: NodeId[] | null, range: [number, number] | null): EditorState => {
   const adoptingNode = state.adoptingNode as string;
@@ -134,15 +161,40 @@ const completeAdoption = (state: EditorState, nodeIds: NodeId[] | null, range: [
   };
 }
 
+const completeDisowning = (state: EditorState, nodeIds: NodeId[] | null): EditorState => {
+  const disowningNode = state.disowningNode as string;
+  const remainingChildren = nodeIds
+    ? state.nodes[disowningNode].children?.filter(childId => !(nodeIds.includes(childId)))
+    : state.nodes[disowningNode].children;
+  const newNodeDef = deriveNodeDefinition(state.sentence,
+    (remainingChildren && remainingChildren.length) ? new Set(remainingChildren) : null, null);
+  return {
+    ...state,
+    nodes: {
+      ...state.nodes,
+      [disowningNode]: {
+        ...state.nodes[disowningNode],
+        ...newNodeDef
+      }
+    },
+    selectedNodes: null,
+    unselectableNodes: null,
+    disowningNode: null,
+    editingNode: null
+  };
+}
+
 const selectText = (state: EditorState, start: number, end: number): EditorState =>
   state.adoptingNode
     ? completeAdoption(state, null, [start, end])
-    : ({
-      ...state,
-      selectedRange: state.sentence ? [start, end] : null,
-      selectedNodes: null,
-      editingNode: null
-    });
+    : state.disowningNode
+      ? completeDisowning(state, null)
+      : ({
+        ...state,
+        selectedRange: state.sentence ? [start, end] : null,
+        selectedNodes: null,
+        editingNode: null
+      });
 
 const setNodeSelected = (state: EditorState, nodeIds: NodeId[], multi: boolean): EditorState => {
   const curSelection: Set<NodeId> | null = state.selectedNodes;
@@ -168,7 +220,9 @@ const selectNode = (state: EditorState, nodeIds: NodeId[], multi: boolean): Edit
   return selectableNodeIds.length
     ? state.adoptingNode
       ? completeAdoption(state, selectableNodeIds, null)
-      : setNodeSelected(state, selectableNodeIds, multi)
+      : state.disowningNode
+        ? completeDisowning(state, selectableNodeIds)
+        : setNodeSelected(state, selectableNodeIds, multi)
     : state;
 }
 
@@ -207,6 +261,9 @@ const toggleEditMode = (state: EditorState): EditorState => {
 
 const toggleAdoptMode = (state: EditorState): EditorState =>
   state.adoptingNode ? stopAdoption(state) : startAdoption(state);
+
+const toggleDisownMode = (state: EditorState): EditorState =>
+  state.disowningNode ? stopDisowning(state) : startDisowning(state);
 
 const deleteNodes = (state: EditorState): EditorState => {
   if (!state.selectedNodes) {
@@ -301,6 +358,7 @@ export const reducer = (state: EditorState, action: EditorAction): EditorState =
     case 'addNode': return addNode(state);
     case 'toggleEditMode': return toggleEditMode(state);
     case 'toggleAdoptMode': return toggleAdoptMode(state);
+    case 'toggleDisownMode': return toggleDisownMode(state);
     case 'deleteNodes': return deleteNodes(state);
     case 'toggleTriangle': return toggleTriangle(state, action.newValue);
     case 'setLabel': return setLabel(state, action.newValue);

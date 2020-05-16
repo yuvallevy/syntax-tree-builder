@@ -17,6 +17,7 @@ const Editor: React.FC = () => {
   const onNodeAdded = () => dispatch({ type: 'addNode' });
   const onToggleEditMode = () => dispatch({ type: 'toggleEditMode' });
   const onToggleAdoptMode = () => dispatch({ type: 'toggleAdoptMode' });
+  const onToggleDisownMode = () => dispatch({ type: 'toggleDisownMode' });
   const onNodesDeleted = () => dispatch({ type: 'deleteNodes' })
   const onTriangleToggled = (newValue: boolean) => dispatch({ type: 'toggleTriangle', newValue })
   const onNodeLabelChanged = (newValue: string) => dispatch({ type: 'setLabel', newValue });
@@ -56,12 +57,14 @@ const Editor: React.FC = () => {
         selectedRange={state.selectedRange}
         selectedNodes={state.selectedNodes}
         adoptingNode={state.adoptingNode}
+        disowningNode={state.disowningNode}
         onNodeAdded={onNodeAdded}
         onToggleEditMode={onToggleEditMode}
         onNodesDeleted={onNodesDeleted}
         onTriangleToggled={onTriangleToggled}
         onNodePositionsReset={onNodePositionsReset}
         onToggleAdoptMode={onToggleAdoptMode}
+        onToggleDisownMode={onToggleDisownMode}
       />
       <View
         nodes={state.nodes}
@@ -70,6 +73,7 @@ const Editor: React.FC = () => {
         unselectableNodes={state.unselectableNodes}
         editingNode={state.editingNode}
         adoptingNode={state.adoptingNode}
+        disowningNode={state.disowningNode}
         onSentenceChanged={onSentenceChanged}
         onTextSelected={onTextSelected}
         onNodesSelected={onNodesSelected}

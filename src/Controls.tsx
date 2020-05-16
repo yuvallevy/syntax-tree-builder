@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NodeId, NodeTree } from './interfaces';
 import { Plus, Edit, Trash, CaretTop, Move, Reply } from 'react-bytesize-icons';
 import './Controls.scss';
-import { Adopt } from './icons';
+import { Adopt, Disown } from './icons';
 
 interface ControlsProps {
   nodes: NodeTree;
@@ -10,9 +10,11 @@ interface ControlsProps {
   selectedRange: [number, number] | null;
   selectedNodes: Set<NodeId> | null;
   adoptingNode: NodeId | null;
+  disowningNode: NodeId | null;
   onNodeAdded: () => void;
   onToggleEditMode: () => void;
   onToggleAdoptMode: () => void;
+  onToggleDisownMode: () => void;
   onNodesDeleted: () => void;
   onTriangleToggled: (newValue: boolean) => void;
   onNodePositionsReset: () => void;
@@ -31,12 +33,13 @@ const TOOL_DESCRIPTIONS: {[key: string]: string} = {
   delete: 'Delete the selected nodes. (Shortcut: Delete or Backspace)',
   triangle: 'Toggle triangles for the selected terminal nodes.',
   resetPositions: 'Relocate the selected nodes to their original positions.',
-  adopt: 'Adopt one or more other nodes as children of the selected node.'
-}
+  adopt: 'Adopt one or more other nodes as children of the selected node.',
+  disown: 'Disown one or more of the children of the selected node.'
+};
 
 const Controls: React.FC<ControlsProps> = ({
-  nodes, selectedRange, selectedNodes, adoptingNode,
-  onNodeAdded, onToggleEditMode, onToggleAdoptMode, onNodesDeleted, onTriangleToggled, onNodePositionsReset
+  nodes, selectedRange, selectedNodes, adoptingNode, disowningNode,
+  onNodeAdded, onToggleEditMode, onToggleAdoptMode, onToggleDisownMode, onNodesDeleted, onTriangleToggled, onNodePositionsReset
 }) => {
   const [hoveredTool, setHoveredTool] = useState<string | null>(null);
 
@@ -65,6 +68,13 @@ const Controls: React.FC<ControlsProps> = ({
         active={!!adoptingNode}
       >
         <Adopt />
+      </ToolbarButton>
+      <ToolbarButton toolName="disown"
+        onClick={() => onToggleDisownMode()}
+        disabled={(!selectedNodes || !selectedNodes.size) && !disowningNode}
+        active={!!disowningNode}
+      >
+        <Disown />
       </ToolbarButton>
       <ToolbarButton toolName="triangle"
         onClick={() => onTriangleToggled(!triangleToggleChecked)}
