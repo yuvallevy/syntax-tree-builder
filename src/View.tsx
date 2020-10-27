@@ -114,7 +114,7 @@ const View: React.FC<ViewProps> = ({
     if ((event as React.MouseEvent).buttons === 1 || 'targetTouches' in event) {
       if (selecting) {
         updateBoxSelection(event);
-      } else if ((event.target as any).tagName === 'text') {
+      } else if ((event.target as any).tagName === 'text' || (event.target as any).tagName === 'svg') {
         onNodesMoved((event as React.MouseEvent).movementX, (event as React.MouseEvent).movementY);
       }
     }
