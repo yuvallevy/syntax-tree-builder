@@ -1,0 +1,28 @@
+@import "./consts.scss";
+
+$modal-background-color: $global-background-color;
+$modal-border-color: #ccc;
+
+.Modal-container {
+  background-color: rgba(0, 0, 0, 0.4);
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Modal-root {
+  background-color: $modal-background-color;
+  border: 1px solid $modal-border-color;
+  border-radius: 2px;
+  padding: 2em;
+}
+
+.Modal-header {
+  font-size: large;
+}

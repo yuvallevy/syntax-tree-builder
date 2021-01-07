@@ -1,3 +1,5 @@
+@import "./consts.scss";
+
 * {
   box-sizing: border-box;
 }
@@ -19,4 +21,17 @@ body {
 
 #root {
   height: 100%;
+}
+
+a, a:visited {
+  color: $primary-color;
+  text-decoration: none;
+}
+
+a:active {
+  color: darken($primary-color, 20%);
+}
+
+a:active, a:hover {
+  text-decoration: underline;
 }

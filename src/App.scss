@@ -1,3 +1,6 @@
+@import "./consts.scss";
+
 .App {
+  background-color: $global-background-color;
   height: 100%;
 }

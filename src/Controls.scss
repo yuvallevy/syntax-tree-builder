@@ -1,4 +1,6 @@
-$active-color: #1080f0;
+@import "./consts.scss";
+
+$active-color: $primary-color;
 $disabled-color: rgba(0, 0, 0, 0.333);
 $toolbar-background-color: #fafafa;
 $toolbar-border-color: #eee;
