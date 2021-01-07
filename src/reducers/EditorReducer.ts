@@ -249,14 +249,18 @@ const setNodeSelected = (state: EditorState, nodeIds: NodeId[], multi: boolean):
 }
 
 const selectNode = (state: EditorState, nodeIds: NodeId[], multi: boolean): EditorState => {
-  const selectableNodeIds = nodeIds.filter(nodeId => !(state.unselectableNodes?.has(nodeId)));
-  return selectableNodeIds.length
-    ? state.adoptingNode
-      ? completeAdoption(state, selectableNodeIds, null)
-      : state.disowningNode
-        ? completeDisowning(state, selectableNodeIds)
-        : setNodeSelected(state, selectableNodeIds, multi)
-    : state;
+  const selectableNodeIds = nodeIds.filter(nodeId =>
+    !(state.unselectableNodes?.has(nodeId) || state.adoptingNode == nodeId || state.disowningNode == nodeId));
+  if (selectableNodeIds.length) {
+    if (state.adoptingNode) {
+      return completeAdoption(state, selectableNodeIds, null);
+    }
+    if (state.disowningNode) {
+      return completeDisowning(state, selectableNodeIds);
+    }
+    return setNodeSelected(state, selectableNodeIds, multi);
+  }
+  return state;
 }
 
 const addNode = (state: EditorState): EditorState => {
