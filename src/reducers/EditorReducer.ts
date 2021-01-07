@@ -250,7 +250,7 @@ const setNodeSelected = (state: EditorState, nodeIds: NodeId[], multi: boolean):
 
 const selectNode = (state: EditorState, nodeIds: NodeId[], multi: boolean): EditorState => {
   const selectableNodeIds = nodeIds.filter(nodeId =>
-    !(state.unselectableNodes?.has(nodeId) || state.adoptingNode == nodeId || state.disowningNode == nodeId));
+    !(state.unselectableNodes?.has(nodeId) || state.adoptingNode === nodeId || state.disowningNode === nodeId));
   if (selectableNodeIds.length) {
     if (state.adoptingNode) {
       return completeAdoption(state, selectableNodeIds, null);
