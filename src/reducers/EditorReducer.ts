@@ -29,8 +29,8 @@ type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'resetNodePositions' };
 
 export const initialState: EditorState = {
-  nodes: TREE,
-  sentence: SENTENCE,
+  nodes: {},  // TREE,
+  sentence: '',  // SENTENCE,
   selectedRange: null,
   selectedNodes: null,
   unselectableNodes: null,
@@ -77,7 +77,7 @@ const deriveNodeDefinition = (sentence: string, selectedNodes: Set<NodeId> | nul
         sentence.substring(selectedRange[0]).includes(' ')
           ? sentence.indexOf(' ', selectedRange[0])
           : sentence.length
-      ]
+      ];
     } else {
       // 2. Otherwise, trim whitespace from both ends of the selection
       const originalSelectionText = sentence.substring(...selectedRange);
