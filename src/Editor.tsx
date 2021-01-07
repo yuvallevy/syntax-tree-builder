@@ -46,7 +46,8 @@ const Editor: React.FC = () => {
         // pass
     }
   }, {
-    filter: () => true
+    filter: () => true,
+    enableOnTags: ['INPUT']
   });
 
   return (
