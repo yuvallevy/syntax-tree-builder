@@ -28,16 +28,16 @@ const AboutBox: React.FC<{}> = () => {
         (tnx Ziv Plotnik for reporting)</li>
     </ul>
     <p>
-      See <a href="https://github.com/yuvallevy/syntax-tree-builder/blob/master/HISTORY.md" target="_blank">
+      See <a href="https://github.com/yuvallevy/syntax-tree-builder/blob/master/HISTORY.md" target="_blank" rel="noopener noreferrer">
         GitHub
       </a> for full release notes.
     </p>
     <p>
-      Syntax Tree Builder is written in <a href="https://www.typescriptlang.org/" target="_blank">
+      Syntax Tree Builder is written in <a href="https://www.typescriptlang.org/" target="_blank" rel="noopener noreferrer">
         TypeScript
-      </a> and powered by <a href="https://reactjs.org/" target="_blank">
+      </a> and powered by <a href="https://reactjs.org/" target="_blank" rel="noopener noreferrer">
         React
-      </a> and <a href="https://www.w3.org/Graphics/SVG/" target="_blank">
+      </a> and <a href="https://www.w3.org/Graphics/SVG/" target="_blank" rel="noopener noreferrer">
         SVG
       </a>.
     </p>
