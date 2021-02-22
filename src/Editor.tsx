@@ -23,6 +23,8 @@ const Editor: React.FC = () => {
   const onNodeLabelChanged = (newValue: string) => dispatch({ type: 'setLabel', newValue });
   const onNodesMoved = (dx: number, dy: number) => dispatch({ type: 'moveNodes', dx, dy });
   const onNodePositionsReset = () => dispatch({ type: 'resetNodePositions' });
+  const onUndoClicked = () => dispatch({ type: 'undo' });
+  const onRedoClicked = () => dispatch({ type: 'redo' });
 
   useHotkeys('ctrl+up,f2,enter,delete,backspace', (event, handler) => {
     switch (handler.key) {
@@ -66,6 +68,8 @@ const Editor: React.FC = () => {
         onNodePositionsReset={onNodePositionsReset}
         onToggleAdoptMode={onToggleAdoptMode}
         onToggleDisownMode={onToggleDisownMode}
+        onUndoClicked={onUndoClicked}
+        onRedoClicked={onRedoClicked}
       />
       <View
         nodes={state.nodes}

@@ -1,7 +1,8 @@
 import { NodeId, NodeTree, NodeData } from '../interfaces';
 import { SENTENCE, TREE } from '../examples';
-import { flatMap, without, chain, difference } from 'lodash';
+import { flatMap, without, chain, difference, omit } from 'lodash';
 import generateId from '../generateId';
+import { createNodeHistoryEntry, createSentenceHistoryEntry, redo, registerHistoryEntry, undo, UndoRedoHistory } from '../undoRedoHistory';
 
 interface EditorState {
   nodes: NodeTree;
@@ -9,9 +10,10 @@ interface EditorState {
   selectedRange: [number, number] | null;
   selectedNodes: Set<NodeId> | null;
   unselectableNodes: Set<NodeId> | null;
-  adoptingNode: NodeId | null,
-  disowningNode: NodeId | null,
+  adoptingNode: NodeId | null;
+  disowningNode: NodeId | null;
   editingNode: NodeId | null;
+  undoRedoHistory: UndoRedoHistory;
 }
 
 type EditorAction = { type: 'setSentence'; newSentence: string; }
@@ -26,17 +28,24 @@ type EditorAction = { type: 'setSentence'; newSentence: string; }
   | { type: 'toggleTriangle'; newValue: boolean; }
   | { type: 'setLabel'; newValue: string; }
   | { type: 'moveNodes'; dx: number; dy: number; }
-  | { type: 'resetNodePositions' };
+  | { type: 'resetNodePositions' }
+  | { type: 'undo' }
+  | { type: 'redo' };
 
 export const initialState: EditorState = {
-  nodes: {},  // TREE,
-  sentence: '',  // SENTENCE,
+  nodes: TREE,  // {},
+  sentence: SENTENCE,  // '',
   selectedRange: null,
   selectedNodes: null,
   unselectableNodes: null,
   adoptingNode: null,
   disowningNode: null,
-  editingNode: null
+  editingNode: null,
+  undoRedoHistory: {
+    undo: [],
+    current: null,
+    redo: [],
+  },
 };
 
 /**
@@ -145,19 +154,22 @@ const completeAdoption = (state: EditorState, nodeIds: NodeId[] | null, range: [
   if (newNodeDef.children && state.nodes[adoptingNode].children) {
     newNodeDef.children = state.nodes[adoptingNode].children!.concat(newNodeDef.children)
   }
+  const newNode: NodeData = {
+    ...state.nodes[adoptingNode],
+    ...newNodeDef
+  }
+  const historyEntry = createNodeHistoryEntry(adoptingNode, state.nodes[adoptingNode], newNode);
   return {
     ...state,
     nodes: {
       ...state.nodes,
-      [adoptingNode]: {
-        ...state.nodes[adoptingNode],
-        ...newNodeDef
-      }
+      [adoptingNode]: newNode
     },
     selectedNodes: null,
     unselectableNodes: null,
     adoptingNode: null,
-    editingNode: null
+    editingNode: null,
+    undoRedoHistory: registerHistoryEntry(state.undoRedoHistory, historyEntry),
   };
 }
 
@@ -168,19 +180,22 @@ const completeDisowning = (state: EditorState, nodeIds: NodeId[] | null): Editor
     : state.nodes[disowningNode].children;
   const newNodeDef = deriveNodeDefinition(state.sentence,
     (remainingChildren && remainingChildren.length) ? new Set(remainingChildren) : null, null);
+  const newNode: NodeData = {
+    ...state.nodes[disowningNode],
+    ...newNodeDef
+  }
+  const historyEntry = createNodeHistoryEntry(disowningNode, state.nodes[disowningNode], newNode);
   return {
     ...state,
     nodes: {
       ...state.nodes,
-      [disowningNode]: {
-        ...state.nodes[disowningNode],
-        ...newNodeDef
-      }
+      [disowningNode]: newNode,
     },
     selectedNodes: null,
     unselectableNodes: null,
     disowningNode: null,
-    editingNode: null
+    editingNode: null,
+    undoRedoHistory: registerHistoryEntry(state.undoRedoHistory, historyEntry),
   };
 };
 
@@ -210,10 +225,12 @@ const setSentence = (state: EditorState, newSentence: string): EditorState => {
       [nodeId]: shiftNodeSlice(node, lengthDiff, cursorPosition)
     }), {})
     : state.nodes;
+  const historyEntry = createSentenceHistoryEntry(state.sentence, newSentence);
   return {
     ...state,
     nodes: newNodes,
-    sentence: newSentence
+    sentence: newSentence,
+    undoRedoHistory: registerHistoryEntry(state.undoRedoHistory, historyEntry),
   };
 };
 
@@ -268,20 +285,23 @@ const addNode = (state: EditorState): EditorState => {
     return state;
   }
   const newNodeId: string = generateId();
+  const newNode: NodeData = {
+    id: newNodeId,
+    label: '',
+    offsetX: 0,
+    offsetY: 0,
+    ...deriveNodeDefinition(state.sentence, state.selectedNodes, state.selectedRange)
+  };
+  const historyEntry = createNodeHistoryEntry(newNodeId, null, newNode);
   return {
     ...state,
     nodes: {
       ...state.nodes,
-      [newNodeId]: {
-        id: newNodeId,
-        label: '',
-        offsetX: 0,
-        offsetY: 0,
-        ...deriveNodeDefinition(state.sentence, state.selectedNodes, state.selectedRange)
-      }
+      [newNodeId]: newNode,
     },
     selectedNodes: new Set([newNodeId]),
-    editingNode: newNodeId
+    editingNode: newNodeId,
+    undoRedoHistory: registerHistoryEntry(state.undoRedoHistory, historyEntry),
   }
 };
 
@@ -338,16 +358,22 @@ const toggleTriangle = (state: EditorState, newValue: boolean): EditorState => {
   };
 };
 
-const setLabel = (state: EditorState, newValue: string): EditorState => ({
-  ...state,
-  nodes: {
-    ...state.nodes,
-    [state.editingNode as string]: {
-      ...state.nodes[state.editingNode as string],
-      label: newValue
-    }
-  }
-});
+const setLabel = (state: EditorState, newValue: string): EditorState => {
+  const editingNode = state.editingNode as string;
+  const newNode = {
+    ...state.nodes[editingNode],
+    label: newValue
+  };
+  const historyEntry = createNodeHistoryEntry(editingNode, state.nodes[editingNode], newNode);
+  return {
+    ...state,
+    nodes: {
+      ...state.nodes,
+      [state.editingNode as string]: newNode,
+    },
+    undoRedoHistory: registerHistoryEntry(state.undoRedoHistory, historyEntry),
+  };
+};
 
 const moveNodes = (state: EditorState, dx: number, dy: number): EditorState => {
   if (!state.selectedNodes) {
@@ -385,6 +411,78 @@ const resetNodePositions = (state: EditorState): EditorState => {
   };
 };
 
+const applyUndo = (state: EditorState): EditorState => {
+  const actionToUndo = state.undoRedoHistory.current;
+  let stateToRestore: EditorState;
+  switch (actionToUndo?.type) {
+    case 'editNode':
+      if (actionToUndo.before) {
+        stateToRestore = {
+          ...state,
+          nodes: {
+            ...state.nodes,
+            [actionToUndo.nodeId]: actionToUndo.before
+          },
+        };
+      } else {
+        stateToRestore = {
+          ...state,
+          nodes: omit(state.nodes, actionToUndo.nodeId),
+          selectedNodes: null,
+        };
+      }
+      break;
+    case 'editSentence':
+      stateToRestore = {
+        ...state,
+        sentence: actionToUndo.before,
+      };
+      break;
+    default:
+      stateToRestore = state;
+  };
+  return {
+    ...stateToRestore,
+    undoRedoHistory: undo(state.undoRedoHistory),
+  };
+}
+
+const applyRedo = (state: EditorState): EditorState => {
+  const actionToRedo = state.undoRedoHistory.current;
+  let stateToRestore: EditorState;
+  switch (actionToRedo?.type) {
+    case 'editNode':
+      if (actionToRedo.after) {
+        stateToRestore = {
+          ...state,
+          nodes: {
+            ...state.nodes,
+            [actionToRedo.nodeId]: actionToRedo.after
+          },
+        };
+      } else {
+        stateToRestore = {
+          ...state,
+          nodes: omit(state.nodes, actionToRedo.nodeId),
+          selectedNodes: null,
+        };
+      }
+      break;
+    case 'editSentence':
+      stateToRestore = {
+        ...state,
+        sentence: actionToRedo.after,
+      };
+      break;
+    default:
+      stateToRestore = state;
+  };
+  return {
+    ...stateToRestore,
+    undoRedoHistory: redo(state.undoRedoHistory),
+  };
+}
+
 export const reducer = (state: EditorState, action: EditorAction): EditorState => {
   console.log(action);
   switch (action.type) {
@@ -401,6 +499,8 @@ export const reducer = (state: EditorState, action: EditorAction): EditorState =
     case 'setLabel': return setLabel(state, action.newValue);
     case 'moveNodes': return moveNodes(state, action.dx, action.dy);
     case 'resetNodePositions': return resetNodePositions(state);
+    case 'undo': return applyUndo(state);
+    case 'redo': return applyRedo(state);
     default: return state;
   }
 };

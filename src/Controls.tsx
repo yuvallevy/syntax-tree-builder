@@ -18,6 +18,8 @@ interface ControlsProps {
   onNodesDeleted: () => void;
   onTriangleToggled: (newValue: boolean) => void;
   onNodePositionsReset: () => void;
+  onUndoClicked: () => void;
+  onRedoClicked: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -34,12 +36,15 @@ const TOOL_DESCRIPTIONS: {[key: string]: string} = {
   triangle: 'Toggle triangles for the selected terminal nodes.',
   resetPositions: 'Relocate the selected nodes to their original positions.',
   adopt: 'Adopt one or more other nodes as children of the selected node.',
-  disown: 'Disown one or more of the children of the selected node.'
+  disown: 'Disown one or more of the children of the selected node.',
+  undo: 'Undo the last action.',
+  redo: 'Redo the last undone action.',
 };
 
 const Controls: React.FC<ControlsProps> = ({
   nodes, selectedRange, selectedNodes, adoptingNode, disowningNode,
-  onNodeAdded, onToggleEditMode, onToggleAdoptMode, onToggleDisownMode, onNodesDeleted, onTriangleToggled, onNodePositionsReset
+  onNodeAdded, onToggleEditMode, onToggleAdoptMode, onToggleDisownMode, onNodesDeleted, onTriangleToggled, onNodePositionsReset,
+  onUndoClicked, onRedoClicked
 }) => {
   const [hoveredTool, setHoveredTool] = useState<string | null>(null);
 
@@ -85,6 +90,12 @@ const Controls: React.FC<ControlsProps> = ({
       <ToolbarButton toolName="resetPositions" onClick={() => onNodePositionsReset()} disabled={!selectedNodes || !selectedNodes.size}>
         <Move />
         <Reply />
+      </ToolbarButton>
+      <ToolbarButton toolName="undo" onClick={() => onUndoClicked()} disabled={false}>
+        undo
+      </ToolbarButton>
+      <ToolbarButton toolName="redo" onClick={() => onRedoClicked()} disabled={false}>
+        redo
       </ToolbarButton>
       {hoveredTool && <div className="tooltip">
         {TOOL_DESCRIPTIONS[hoveredTool]}

@@ -2,7 +2,7 @@ import { NodeData, NodeId } from './interfaces';
 
 interface BaseUndoRedoHistoryEntry {
   type: string;
-  timestamp: Date;
+  timestamp?: Date;
 }
 
 interface NodeUndoRedoHistoryEntry extends BaseUndoRedoHistoryEntry {
@@ -28,7 +28,7 @@ export interface UndoRedoHistory {
 };
 
 export const entryToString = (entry: UndoRedoHistoryEntry) => {
-  const timestampStr = entry.timestamp.toISOString();
+  const timestampStr = entry.timestamp?.toISOString();
   switch (entry.type) {
     case 'editNode':
       return `${timestampStr} edit node ${entry.nodeId}`;
@@ -68,3 +68,21 @@ export const registerHistoryEntry = (history: UndoRedoHistory, action: UndoRedoH
     redo: [],
   }
 };
+
+const createHistoryEntry = (entry: UndoRedoHistoryEntry) => ({
+  ...entry,
+  timestamp: new Date(),
+}) as UndoRedoHistoryEntry;
+
+export const createNodeHistoryEntry = (nodeId: NodeId, before: NodeData | null, after: NodeData | null): UndoRedoHistoryEntry => createHistoryEntry({
+  type: 'editNode',
+  nodeId,
+  before,
+  after,
+});
+
+export const createSentenceHistoryEntry = (before: string, after: string): UndoRedoHistoryEntry => createHistoryEntry({
+  type: 'editSentence',
+  before,
+  after,
+});
