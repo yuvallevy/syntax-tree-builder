@@ -1,7 +1,7 @@
-import { computeNodePositions, computeTreeWidth, computeTreeHeight } from './positioning';
-import { NodeTree, PositionedNodeTree } from './interfaces';
+import { computeNodePositions, computeTreeWidth, computeTreeHeight } from '../positioning';
+import { NodeTree, PositionedNodeTree } from '../interfaces';
 
-jest.mock('./measureText');
+jest.mock('../measureText');
 
 const sentence = 'Colorless green ideas sleep furiously.';
 

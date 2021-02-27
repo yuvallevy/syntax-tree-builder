@@ -1,5 +1,5 @@
-import { NodeTree } from './interfaces';
-import { NodeUndoRedoHistoryEntry, UndoRedoHistory, UndoRedoHistoryEntry } from './undoRedoHistory';
+import { NodeTree } from '../interfaces';
+import { NodeUndoRedoHistoryEntry, UndoRedoHistory, UndoRedoHistoryEntry } from '../undoRedoHistory';
 
 describe.only('undo/redo history', () => {
   const nodes: NodeTree = {
