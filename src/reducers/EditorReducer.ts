@@ -3,34 +3,11 @@ import { SENTENCE, TREE } from '../examples';
 import { flatMap, without, chain, difference, omit } from 'lodash';
 import generateId from '../generateId';
 import { NodeUndoRedoHistoryEntry, SentenceUndoRedoHistoryEntry, UndoRedoHistory } from '../undoRedoHistory';
-
-interface EditorState {
-  nodes: NodeTree;
-  sentence: string;
-  selectedRange: [number, number] | null;
-  selectedNodes: Set<NodeId> | null;
-  unselectableNodes: Set<NodeId> | null;
-  adoptingNode: NodeId | null;
-  disowningNode: NodeId | null;
-  editingNode: NodeId | null;
-  undoRedoHistory: UndoRedoHistory;
-}
-
-type EditorAction = { type: 'setSentence'; newSentence: string; }
-  | { type: 'selectText'; start: number; end: number; }
-  | { type: 'selectNode'; nodeIds: NodeId[]; multi: boolean; }
-  | { type: 'clearSelection'; }
-  | { type: 'addNode'; }
-  | { type: 'toggleEditMode'; }
-  | { type: 'toggleAdoptMode'; }
-  | { type: 'toggleDisownMode'; }
-  | { type: 'deleteNodes'; }
-  | { type: 'toggleTriangle'; newValue: boolean; }
-  | { type: 'setLabel'; newValue: string; }
-  | { type: 'moveNodes'; dx: number; dy: number; }
-  | { type: 'resetNodePositions' }
-  | { type: 'undo' }
-  | { type: 'redo' };
+import { EditorAction, EditorState } from './interfaces';
+import { moveNodes, resetNodePositions } from './position';
+import { deleteNodes, setNodeLabel, toggleTriangle } from './editNodes';
+import { addNode } from './editNodes';
+import { deriveNodeDefinition } from './smartNodeDef';
 
 export const initialState: EditorState = {
   nodes: TREE,  // {},
@@ -59,51 +36,6 @@ const isDescendant = (nodes: NodeTree, ancestorId: NodeId, descendantId: NodeId)
 
 const getAncestors = (nodes: NodeTree, descendantId: NodeId): NodeId[] =>
   Object.keys(nodes).filter(nodeId => isDescendant(nodes, nodeId, descendantId));
-
-/**
- * Returns what the definition of a new node should be, taking into account the sentence and selection.
- * Used for some convenient shortcuts, such as trimming spaces within the selection or allowing the user to add a node
- * corresponding to a word without having to select the whole word.
- */
-const deriveNodeDefinition = (sentence: string, selectedNodes: Set<NodeId> | null, selectedRange: [number, number] | null) => {
-  if (selectedNodes) {
-    return {
-      children: Array.from(selectedNodes),
-      slice: undefined
-    };
-  }
-  if (selectedRange) {
-    // Do some magic to find out what the user actually wants:
-    let desiredRange: [number, number];
-    // 1. If there is only a cursor, treat the entire word as selected
-    if (selectedRange[0] === selectedRange[1]) {
-      desiredRange = [
-        sentence.substring(0, selectedRange[0]).lastIndexOf(' ') + 1,
-        sentence.substring(selectedRange[0]).includes(' ')
-          ? sentence.indexOf(' ', selectedRange[0])
-          : sentence.length
-      ];
-    } else {
-      // 2. Otherwise, trim whitespace from both ends of the selection
-      const originalSelectionText = sentence.substring(...selectedRange);
-      const trimStartCount = originalSelectionText.length - originalSelectionText.trimStart().length;
-      const trimEndCount = originalSelectionText.length - originalSelectionText.trimEnd().length;
-      desiredRange = [
-        selectedRange[0] + trimStartCount,
-        selectedRange[1] - trimEndCount
-      ];
-    }
-    return {
-      slice: desiredRange,
-      triangle: sentence.substring(...desiredRange).includes(' '),
-      children: undefined
-    };
-  }
-  return {
-    slice: undefined,
-    children: undefined
-  };
-};
 
 const startAdoption = (state: EditorState): EditorState => {
   if (!state.selectedNodes) {
@@ -276,31 +208,6 @@ const selectNode = (state: EditorState, nodeIds: NodeId[], multi: boolean): Edit
   return state;
 }
 
-const addNode = (state: EditorState): EditorState => {
-  if (!state.selectedRange && !state.selectedNodes) {
-    return state;
-  }
-  const newNodeId: string = generateId();
-  const newNode: NodeData = {
-    id: newNodeId,
-    label: '',
-    offsetX: 0,
-    offsetY: 0,
-    ...deriveNodeDefinition(state.sentence, state.selectedNodes, state.selectedRange)
-  };
-  const historyEntry = new NodeUndoRedoHistoryEntry(newNodeId, null, newNode);
-  return {
-    ...state,
-    nodes: {
-      ...state.nodes,
-      [newNodeId]: newNode,
-    },
-    selectedNodes: new Set([newNodeId]),
-    editingNode: newNodeId,
-    undoRedoHistory: state.undoRedoHistory.register(historyEntry),
-  }
-};
-
 const toggleEditMode = (state: EditorState): EditorState => {
   if (!state.selectedNodes) {
     return state;
@@ -317,95 +224,6 @@ const toggleAdoptMode = (state: EditorState): EditorState =>
 
 const toggleDisownMode = (state: EditorState): EditorState =>
   state.disowningNode ? stopDisowning(state) : startDisowning(state);
-
-const deleteNodes = (state: EditorState): EditorState => {
-  if (!state.selectedNodes) {
-    return state;
-  }
-  const selectedNodes = Array.from(state.selectedNodes);
-  return {
-    ...state,
-    selectedNodes: null,
-    nodes: chain(state.nodes)
-      .omit(selectedNodes)
-      .toPairs()
-      .map(([nodeId, node]) => [nodeId, node.children ? ({
-        ...node,
-        children: without(node.children, ...selectedNodes)
-      }) : node])
-      .fromPairs().value()
-  };
-};
-
-const toggleTriangle = (state: EditorState, newValue: boolean): EditorState => {
-  if (!state.selectedNodes) {
-    return state;
-  }
-  const selectedNodes = Array.from(state.selectedNodes);
-  return {
-    ...state,
-    nodes: {
-      ...state.nodes,
-      ...Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
-        ...state.nodes[nodeId],
-        triangle: newValue
-      }]))
-    }
-  };
-};
-
-const setLabel = (state: EditorState, newValue: string): EditorState => {
-  const editingNode = state.editingNode as string;
-  const newNode = {
-    ...state.nodes[editingNode],
-    label: newValue
-  };
-  const historyEntry = new NodeUndoRedoHistoryEntry(editingNode, state.nodes[editingNode], newNode);
-  return {
-    ...state,
-    nodes: {
-      ...state.nodes,
-      [state.editingNode as string]: newNode,
-    },
-    undoRedoHistory: state.undoRedoHistory.register(historyEntry),
-  };
-};
-
-const moveNodes = (state: EditorState, dx: number, dy: number): EditorState => {
-  if (!state.selectedNodes) {
-    return state;
-  }
-  const selectedNodes = Array.from(state.selectedNodes);
-  return {
-    ...state,
-    nodes: {
-      ...state.nodes,
-      ...Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
-        ...state.nodes[nodeId],
-        offsetX: state.nodes[nodeId].offsetX + dx,
-        offsetY: state.nodes[nodeId].offsetY + dy
-      }]))
-    }
-  };
-};
-
-const resetNodePositions = (state: EditorState): EditorState => {
-  if (!state.selectedNodes) {
-    return state;
-  }
-  const selectedNodes = Array.from(state.selectedNodes);
-  return {
-    ...state,
-    nodes: {
-      ...state.nodes,
-      ...Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
-        ...state.nodes[nodeId],
-        offsetX: 0,
-        offsetY: 0
-      }]))
-    }
-  };
-};
 
 const applyUndo = (state: EditorState): EditorState => {
   const actionToUndo = state.undoRedoHistory.present;
@@ -492,7 +310,7 @@ export const reducer = (state: EditorState, action: EditorAction): EditorState =
     case 'toggleDisownMode': return toggleDisownMode(state);
     case 'deleteNodes': return deleteNodes(state);
     case 'toggleTriangle': return toggleTriangle(state, action.newValue);
-    case 'setLabel': return setLabel(state, action.newValue);
+    case 'setLabel': return setNodeLabel(state, action.newValue);
     case 'moveNodes': return moveNodes(state, action.dx, action.dy);
     case 'resetNodePositions': return resetNodePositions(state);
     case 'undo': return applyUndo(state);
