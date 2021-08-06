@@ -4,7 +4,7 @@ import View from './View';
 import Controls from './Controls';
 import { NodeId } from './interfaces';
 import './Editor.scss';
-import { reducer, initialState } from './reducers/editorReducer';
+import { reducer, initialState } from './reducers/EditorReducer';
 
 const Editor: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
