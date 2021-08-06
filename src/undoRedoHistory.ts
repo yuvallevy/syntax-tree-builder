@@ -64,7 +64,7 @@ export class UndoRedoHistory {
   ) {}
 
   undo(): UndoRedoHistory {
-    if (this.present && this.past) {
+    if (this.present && this.past.length > 0) {
       return new UndoRedoHistory(
         this.past.slice(1),
         this.past[0],
@@ -75,7 +75,7 @@ export class UndoRedoHistory {
   }
 
   redo(): UndoRedoHistory {
-    if (this.future) {
+    if (this.future.length > 0) {
       return new UndoRedoHistory(
         this.present ? [this.present, ...this.past] : this.past,
         this.future[0],
