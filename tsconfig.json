@@ -2,14 +2,11 @@
   "compilerOptions": {
     "outDir": "./dist/",
     "sourceMap": true,
-    "strictNullChecks": true,
     "module": "esnext",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "target": "es5",
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
     "lib": [
       "dom",
       "dom.iterable",
@@ -26,6 +23,6 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "./src"
+    "src"
   ]
 }
