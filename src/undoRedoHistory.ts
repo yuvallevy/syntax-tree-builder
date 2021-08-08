@@ -98,10 +98,19 @@ export class UndoRedoHistory {
     return this;
   }
 
-  register(entry: UndoRedoHistoryEntry) {
+  register(newEntry: BaseUndoRedoHistoryEntry<NodeData | string | null>) {
+    // If the last registered action (i.e. what was the present until now) was a very short time ago,
+    // and was of the same type, merge the actions together so they can be undone/redone as one.
+    if (this.present?.constructor === newEntry.constructor &&
+      newEntry.timestamp.valueOf() - this.present.timestamp.valueOf() < ACTION_GROUPING_INTERVAL_THRESHOLD) {
+        return new UndoRedoHistory(
+          this.past,
+          this.present.merge(newEntry),
+        );
+      }
     return new UndoRedoHistory(
       this.present ? [this.present, ...this.past] : this.past,
-      entry,
-    )
+      newEntry,
+    );
   }
 };
