@@ -1,7 +1,7 @@
 import { NodeTree } from '../interfaces';
 import { UndoRedoHistoryEntry, UndoRedoHistory } from '../undoRedoHistory';
 
-describe.only('undo/redo history', () => {
+describe('undo/redo history', () => {
   const nodes: NodeTree = {
     'abcde': {
       id: 'abcde',
