@@ -1,5 +1,5 @@
 import { NodeTree } from '../interfaces';
-import { NodeUndoRedoHistoryEntry, UndoRedoHistory, UndoRedoHistoryEntry } from '../undoRedoHistory';
+import { NodeUndoRedoHistoryEntry, UndoRedoHistory, BaseUndoRedoHistoryEntry } from '../undoRedoHistory';
 
 describe.only('undo/redo history', () => {
   const nodes: NodeTree = {
@@ -26,23 +26,32 @@ describe.only('undo/redo history', () => {
     },
   };
 
-  const actions: UndoRedoHistoryEntry[] = [
+  const actions: BaseUndoRedoHistoryEntry[] = [
     new NodeUndoRedoHistoryEntry(
-      'klmno',
-      nodes['klmno'],
-      { ...nodes['klmno'], slice: [4, 7] },
+      {
+        klmno: {
+          before: nodes['klmno'],
+          after: { ...nodes['klmno'], slice: [4, 7] },
+        }
+      },
       new Date(2021, 1, 22, 8, 4, 19, 576),
     ),
     new NodeUndoRedoHistoryEntry(
-      'fghij',
-      nodes['fghij'],
-      { ...nodes['fghij'], label: 'D' },
+      {
+        fghij: {
+          before: nodes['fghij'],
+          after: { ...nodes['fghij'], label: 'D' },
+        }
+      },
       new Date(2021, 1, 22, 8, 4, 21, 135),
     ),
     new NodeUndoRedoHistoryEntry(
-      'klmno',
-      { ...nodes['klmno'], slice: [4, 7] },
-      nodes['klmno'],
+      {
+        klmno: {
+          before: { ...nodes['klmno'], slice: [4, 7] },
+          after: nodes['klmno'],
+        }
+      },
       new Date(2021, 1, 22, 8, 4, 23, 635),
     ),
   ];
