@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { NodeId, NodeTree } from './interfaces';
 import { Plus, Edit, Trash, CaretTop, Move, Reply } from 'react-bytesize-icons';
 import './Controls.scss';
-import { Adopt, Disown } from './icons';
+import { Adopt, Disown, Undo, Redo } from './icons';
+import { UndoRedoHistory } from './undoRedoHistory';
 
 interface ControlsProps {
   nodes: NodeTree;
@@ -11,6 +12,7 @@ interface ControlsProps {
   selectedNodes: Set<NodeId> | null;
   adoptingNode: NodeId | null;
   disowningNode: NodeId | null;
+  undoRedoHistory: UndoRedoHistory;
   onNodeAdded: () => void;
   onToggleEditMode: () => void;
   onToggleAdoptMode: () => void;
@@ -37,12 +39,12 @@ const TOOL_DESCRIPTIONS: {[key: string]: string} = {
   resetPositions: 'Relocate the selected nodes to their original positions.',
   adopt: 'Adopt one or more other nodes as children of the selected node.',
   disown: 'Disown one or more of the children of the selected node.',
-  undo: 'Undo the last action.',
-  redo: 'Redo the last undone action.',
+  undo: 'Undo the last action. (Shortcut: Ctrl+Z)',
+  redo: 'Redo the last undone action. (Shortcut: Ctrl+Y)',
 };
 
 const Controls: React.FC<ControlsProps> = ({
-  nodes, selectedRange, selectedNodes, adoptingNode, disowningNode,
+  nodes, selectedRange, selectedNodes, adoptingNode, disowningNode, undoRedoHistory,
   onNodeAdded, onToggleEditMode, onToggleAdoptMode, onToggleDisownMode, onNodesDeleted, onTriangleToggled, onNodePositionsReset,
   onUndoClicked, onRedoClicked
 }) => {
@@ -91,11 +93,11 @@ const Controls: React.FC<ControlsProps> = ({
         <Move />
         <Reply />
       </ToolbarButton>
-      <ToolbarButton toolName="undo" onClick={() => onUndoClicked()} disabled={false}>
-        undo
+      <ToolbarButton toolName="undo" onClick={() => onUndoClicked()} disabled={!undoRedoHistory.canUndo()}>
+        <Undo />
       </ToolbarButton>
-      <ToolbarButton toolName="redo" onClick={() => onRedoClicked()} disabled={false}>
-        redo
+      <ToolbarButton toolName="redo" onClick={() => onRedoClicked()} disabled={!undoRedoHistory.canRedo()}>
+        <Redo />
       </ToolbarButton>
       {hoveredTool && <div className="tooltip">
         {TOOL_DESCRIPTIONS[hoveredTool]}

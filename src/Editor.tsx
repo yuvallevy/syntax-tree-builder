@@ -26,7 +26,7 @@ const Editor: React.FC = () => {
   const onUndoClicked = () => dispatch({ type: 'undo' });
   const onRedoClicked = () => dispatch({ type: 'redo' });
 
-  useHotkeys('ctrl+up,f2,enter,delete,backspace', (event, handler) => {
+  useHotkeys('ctrl+up,f2,enter,delete,backspace,ctrl+z,ctrl+y', (event, handler) => {
     switch (handler.key) {
       case 'ctrl+up':
         event.preventDefault();
@@ -42,6 +42,18 @@ const Editor: React.FC = () => {
         if ((event.target as Element).tagName !== 'INPUT') {
           event.preventDefault();
           onNodesDeleted();
+        }
+        break;
+      case 'ctrl+z':
+        if ((event.target as Element).tagName !== 'INPUT') {
+          event.preventDefault();
+          onUndoClicked();
+        }
+        break;
+      case 'ctrl+y':
+        if ((event.target as Element).tagName !== 'INPUT') {
+          event.preventDefault();
+          onRedoClicked();
         }
         break;
       default:
@@ -61,6 +73,7 @@ const Editor: React.FC = () => {
         selectedNodes={state.selectedNodes}
         adoptingNode={state.adoptingNode}
         disowningNode={state.disowningNode}
+        undoRedoHistory={state.undoRedoHistory}
         onNodeAdded={onNodeAdded}
         onToggleEditMode={onToggleEditMode}
         onNodesDeleted={onNodesDeleted}

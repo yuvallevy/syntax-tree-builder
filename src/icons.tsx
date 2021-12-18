@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Adopt = () => <svg id="i-search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentcolor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+export const Adopt = () => <svg id="i-adopt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentcolor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
   <g transform="translate(7.25,-0.25)">
     <rect x={8} y={1} width={16} height={10.5} rx={2} />
     <rect x={8} y={21} width={16} height={10.5} rx={2} />
@@ -18,7 +18,7 @@ export const Adopt = () => <svg id="i-search" xmlns="http://www.w3.org/2000/svg"
   </g>
 </svg>;
 
-export const Disown = () => <svg id="i-search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentcolor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+export const Disown = () => <svg id="i-disown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentcolor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
   <g transform="translate(7.25,-0.25)">
     <rect x={8} y={1} width={16} height={10.5} rx={2} />
     <rect x={8} y={21} width={16} height={10.5} rx={2} strokeDasharray="2 3" />
@@ -29,3 +29,11 @@ export const Disown = () => <svg id="i-search" xmlns="http://www.w3.org/2000/svg
     <line x1={10} y1={22} x2={22} y2={10} />
   </g>
 </svg>;
+
+export const Undo = () => <svg id="i-undo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentcolor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+  <path d="M 6.5 27.5 L 18.5 27.5 A 1 1 0 0 0 18.5 8.5 L 4.5 8.5 m 5 -5 l -5 5 l 5 5"></path>
+</svg>
+
+export const Redo = () => <svg id="i-redo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentcolor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+  <path d="M 25.5 27.5 L 14 27.5 A 1 1 0 0 1 13.5 8.5 L 27.5 8.5 m -5 -5 l 5 5 l -5 5"></path>
+</svg>
