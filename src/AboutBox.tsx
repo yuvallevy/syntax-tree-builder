@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Modal from './Modal';
 
 const LS_KEY_VERSION = 'v';
-const CURRENT_VERSION = '0.1';
+const CURRENT_VERSION = '0.2';
 
 const AboutBox: React.FC<{}> = () => {
   const [visible, setVisible] = useState(localStorage.getItem(LS_KEY_VERSION) !== CURRENT_VERSION);
@@ -15,7 +15,7 @@ const AboutBox: React.FC<{}> = () => {
 
   return <Modal
     visible={visible}
-    header="Syntax Tree Builder"
+    header={`Syntax Tree Builder v${CURRENT_VERSION}`}
     width="60vw"
     onDismiss={hideMe}
   >
@@ -23,9 +23,7 @@ const AboutBox: React.FC<{}> = () => {
       using an intuitive, in-browser WYSIWYG interface instead of labeled bracket notation.</p>
     <h4>New in alpha {CURRENT_VERSION}:</h4>
     <ul>
-      <li>Fixed bug where top-level nodes were able to adopt themselves,
-        triggering a recursion error and causing the tree to implode.
-        (tnx Ziv Plotnik for reporting)</li>
+      <li>Added the long-overdue undo/redo functionality.</li>
     </ul>
     <p>
       See <a href="https://github.com/yuvallevy/syntax-tree-builder/blob/master/HISTORY.md" target="_blank" rel="noopener noreferrer">
