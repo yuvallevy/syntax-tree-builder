@@ -16,8 +16,8 @@ import { selectNode, selectText } from './selection';
 import { applyRedo, applyUndo } from './undoRedo';
 
 export const initialState: EditorState = {
-  nodes: TREE,  // {},
-  sentence: SENTENCE,  // '',
+  nodes: {},
+  sentence: '',
   selectedRange: null,
   selectedNodes: null,
   unselectableNodes: null,
