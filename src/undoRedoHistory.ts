@@ -1,22 +1,63 @@
-import { NodeData, NodeId } from './interfaces';
+import { NodeData } from './interfaces';
 
 const ACTION_GROUPING_INTERVAL_THRESHOLD = 400;
 
-export abstract class BaseUndoRedoHistoryEntry {
+interface Change<T> {
+  before: T;
+  after: T;
+}
+type SingleNodeChange = Change<NodeData | null>;
+type NodeSetChange = { [nodeId: string]: SingleNodeChange };
+type SentenceChange = Change<string>;
+
+const mergeNodeChanges = (earlier: NodeSetChange, later: NodeSetChange): NodeSetChange => {
+  const mergedChangedNodes = { ...earlier };
+  Object.entries(later).forEach(([nodeId, { before, after }]) => {
+    mergedChangedNodes[nodeId] = {
+      before: mergedChangedNodes[nodeId]?.before || before,
+      after: after,
+    };
+  });
+  return mergedChangedNodes;
+};
+
+const mergeSentenceChanges = (earlier?: SentenceChange, later?: SentenceChange): SentenceChange | undefined =>
+  // if both changes exist, merge them
+  earlier && later ? ({
+    before: earlier.before,
+    after: later.after,
+  }) :
+  // if only one exists, return it
+  earlier || later ||
+  // if no changes were made at all at either point in time, reflect that in the merged entry
+  undefined;
+
+export class UndoRedoHistoryEntry {
   timestamp: Date;
 
-  constructor(timestamp?: Date) {
+  constructor(
+    readonly changedNodes: NodeSetChange,
+    readonly changedSentence?: SentenceChange,
+    timestamp?: Date,
+  ) {
     this.timestamp = timestamp || new Date();
+  }
+  get timestampStr() {
+    return this.timestamp?.toISOString();
   }
 
   /**
    * Returns this entry merged with a later one, with the "before" of this entry
    * and the "after" and timestamp of the given later entry.
    */
-  abstract merge(laterEntry: BaseUndoRedoHistoryEntry): BaseUndoRedoHistoryEntry;
-
-  get timestampStr() {
-    return this.timestamp?.toISOString();
+  merge(laterEntry: UndoRedoHistoryEntry): UndoRedoHistoryEntry {
+    const mergedChangedNodes = mergeNodeChanges(this.changedNodes, laterEntry.changedNodes);
+    const mergedChangedSentence = mergeSentenceChanges(this.changedSentence, laterEntry.changedSentence);
+    return new UndoRedoHistoryEntry(
+      mergedChangedNodes,
+      mergedChangedSentence,
+      laterEntry.timestamp,
+    );
   }
 
   toString() {
@@ -24,72 +65,11 @@ export abstract class BaseUndoRedoHistoryEntry {
   }
 }
 
-export class NodeUndoRedoHistoryEntry extends BaseUndoRedoHistoryEntry {
-  constructor(
-    readonly changedNodes: {
-      [nodeId: string]: {
-        before: NodeData | null;
-        after: NodeData | null;
-      },
-    },
-    timestamp?: Date,
-  ) {
-    super(timestamp);
-  }
-
-  merge(laterEntry: NodeUndoRedoHistoryEntry): NodeUndoRedoHistoryEntry {
-    const mergedChangedNodes = { ...this.changedNodes };
-    Object.entries(laterEntry.changedNodes).forEach(([nodeId, { before, after }]) => {
-      mergedChangedNodes[nodeId] = {
-        before: mergedChangedNodes[nodeId]?.before || before,
-        after: after,
-      };
-    });
-    return new NodeUndoRedoHistoryEntry(
-      mergedChangedNodes,
-      laterEntry.timestamp,
-    );
-  }
-
-  private changeToString(nodeId: NodeId, change: { before: NodeData | null; after: NodeData | null; }) {
-    if (!change.before) return `add node ${nodeId}`;
-    if (!change.after) return `delete node ${nodeId}`;
-    return `edit node ${nodeId} from ${change.before?.label} to ${change.after?.label}`
-  }
-
-  toString() {
-    return super.toString() +
-      Object.entries(this.changedNodes).map(([nodeId, change]) => this.changeToString(nodeId, change)).join(', ');
-  }
-}
-
-export class SentenceUndoRedoHistoryEntry extends BaseUndoRedoHistoryEntry {
-  constructor(
-    readonly before: string,
-    readonly after: string,
-    timestamp?: Date,
-  ) {
-    super(timestamp);
-  }
-
-  merge(laterEntry: SentenceUndoRedoHistoryEntry): SentenceUndoRedoHistoryEntry {
-    return new SentenceUndoRedoHistoryEntry(
-      this.before,
-      laterEntry.after,
-      laterEntry.timestamp,
-    );
-  }
-
-  toString() {
-    return super.toString() + `edit sentence to "${this.after}"`;
-  }
-}
-
 export class UndoRedoHistory {
   constructor(
-    readonly past: BaseUndoRedoHistoryEntry[] = [],
-    readonly present: BaseUndoRedoHistoryEntry | null = null,
-    readonly future: BaseUndoRedoHistoryEntry[] = [],
+    readonly past: UndoRedoHistoryEntry[] = [],
+    readonly present: UndoRedoHistoryEntry | null = null,
+    readonly future: UndoRedoHistoryEntry[] = [],
   ) {}
 
   canUndo(): boolean { return !!this.present || this.past.length > 0; }
@@ -117,7 +97,7 @@ export class UndoRedoHistory {
     return this;
   }
 
-  register(newEntry: BaseUndoRedoHistoryEntry) {
+  register(newEntry: UndoRedoHistoryEntry) {
     // If the last registered action (i.e. what was the present until now) was a very short time ago,
     // and was of the same type, merge the actions together so they can be undone/redone as one.
     if (this.present?.constructor === newEntry.constructor &&

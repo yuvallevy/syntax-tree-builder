@@ -1,7 +1,7 @@
 import { difference, flatMap, intersection, omit } from 'lodash';
 import generateId from '../generateId';
 import { NodeData, NodeId, NodeTree } from '../interfaces';
-import { NodeUndoRedoHistoryEntry } from '../undoRedoHistory';
+import { UndoRedoHistoryEntry } from '../undoRedoHistory';
 import { EditorState } from './interfaces';
 import { deriveNodeDefinition } from './smartNodeDef';
 
@@ -42,7 +42,7 @@ export const addNode = (state: EditorState): EditorState => {
     offsetY: 0,
     ...deriveNodeDefinition(state.sentence, state.selectedNodes, state.selectedRange)
   };
-  const historyEntry = new NodeUndoRedoHistoryEntry({
+  const historyEntry = new UndoRedoHistoryEntry({
     [newNodeId]: {
       before: null,
       after: newNode
@@ -66,7 +66,12 @@ export const setNodeLabel = (state: EditorState, newValue: string): EditorState 
     ...state.nodes[editingNode],
     label: newValue
   };
-  const historyEntry = new NodeUndoRedoHistoryEntry({ [editingNode]: { before: state.nodes[editingNode], after: newNode } });
+  const historyEntry = new UndoRedoHistoryEntry({
+    [editingNode]: {
+      before: state.nodes[editingNode],
+      after: newNode
+    }
+  });
   return {
     ...state,
     nodes: {
@@ -86,7 +91,7 @@ export const toggleTriangle = (state: EditorState, newValue: boolean): EditorSta
     ...state.nodes[nodeId],
     triangle: newValue,
   }]));
-  const historyEntry = new NodeUndoRedoHistoryEntry(Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
+  const historyEntry = new UndoRedoHistoryEntry(Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
     before: state.nodes[nodeId],
     after: newNodes[nodeId],
   }])));
@@ -112,7 +117,7 @@ export const deleteNodes = (state: EditorState): EditorState => {
     .map(([nodeId, node]) => [nodeId, { ...node, children: difference(node.children, selectedNodes) }] as [NodeId, NodeData])
     // convert back into an object
     .reduce((accum, [nodeId, node]) => ({ ...accum, [nodeId]: node }), {}) as NodeTree;
-  const historyEntry = new NodeUndoRedoHistoryEntry(selectedNodes.reduce((accum, nodeId) => ({
+  const historyEntry = new UndoRedoHistoryEntry(selectedNodes.reduce((accum, nodeId) => ({
     ...accum,
     [nodeId]: { before: state.nodes[nodeId], after: null },
   }), Object.entries(newParentNodes).reduce((accum, [nodeId, node]) => ({
@@ -179,7 +184,7 @@ export const completeAdoption = (state: EditorState, nodeIds: NodeId[] | null, r
     ...state.nodes[adoptingNode],
     ...newNodeDef
   }
-  const historyEntry = new NodeUndoRedoHistoryEntry({
+  const historyEntry = new UndoRedoHistoryEntry({
     [adoptingNode]: {
       before: state.nodes[adoptingNode],
       after: newNode
@@ -210,7 +215,7 @@ export const completeDisowning = (state: EditorState, nodeIds: NodeId[] | null):
     ...state.nodes[disowningNode],
     ...newNodeDef
   }
-  const historyEntry = new NodeUndoRedoHistoryEntry({
+  const historyEntry = new UndoRedoHistoryEntry({
     [disowningNode]: {
       before: state.nodes[disowningNode],
       after: newNode

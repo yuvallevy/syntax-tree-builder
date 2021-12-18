@@ -1,5 +1,5 @@
 import { NodeData, NodeTree } from '../interfaces';
-import { SentenceUndoRedoHistoryEntry } from '../undoRedoHistory';
+import { UndoRedoHistoryEntry } from '../undoRedoHistory';
 import { EditorState } from './interfaces';
 
 /**
@@ -22,13 +22,31 @@ const shiftNodeSlice = (node: NodeData, insertedCount: number, insertedAt: numbe
 export const setSentence = (state: EditorState, newSentence: string): EditorState => {
   const lengthDiff = newSentence.length - state.sentence.length;
   const cursorPosition = state.selectedRange?.[0];
+  
   const newNodes: NodeTree = cursorPosition !== undefined
     ? Object.entries(state.nodes).reduce((acc, [nodeId, node]) => ({
       ...acc,
       [nodeId]: shiftNodeSlice(node, lengthDiff, cursorPosition)
     }), {})
     : state.nodes;
-  const historyEntry = new SentenceUndoRedoHistoryEntry(state.sentence, newSentence);
+  const nodeChanges = cursorPosition !== undefined
+    ? Object.entries(newNodes).reduce((acc, [nodeId, newNode]) => ({
+      ...acc,
+      ...(newNode.slice ? {
+        [nodeId]: {
+          before: state.nodes[nodeId],
+          after: newNode,
+        },
+      } : {})
+    }), {})
+    : {};
+
+  const sentenceChanges = {
+    before: state.sentence,
+    after: newSentence
+  };
+
+  const historyEntry = new UndoRedoHistoryEntry(nodeChanges, sentenceChanges);
   return {
     ...state,
     nodes: newNodes,
