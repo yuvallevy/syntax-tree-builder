@@ -1,4 +1,4 @@
-import { chain, difference, flatMap, without } from 'lodash';
+import { difference, flatMap, intersection, omit } from 'lodash';
 import generateId from '../generateId';
 import { NodeData, NodeId, NodeTree } from '../interfaces';
 import { NodeUndoRedoHistoryEntry } from '../undoRedoHistory';
@@ -42,7 +42,12 @@ export const addNode = (state: EditorState): EditorState => {
     offsetY: 0,
     ...deriveNodeDefinition(state.sentence, state.selectedNodes, state.selectedRange)
   };
-  const historyEntry = new NodeUndoRedoHistoryEntry(newNodeId, null, newNode);
+  const historyEntry = new NodeUndoRedoHistoryEntry({
+    [newNodeId]: {
+      before: null,
+      after: newNode
+    }
+  });
   return {
     ...state,
     nodes: {
@@ -61,7 +66,7 @@ export const setNodeLabel = (state: EditorState, newValue: string): EditorState 
     ...state.nodes[editingNode],
     label: newValue
   };
-  const historyEntry = new NodeUndoRedoHistoryEntry(editingNode, state.nodes[editingNode], newNode);
+  const historyEntry = new NodeUndoRedoHistoryEntry({ [editingNode]: { before: state.nodes[editingNode], after: newNode } });
   return {
     ...state,
     nodes: {
@@ -77,15 +82,21 @@ export const toggleTriangle = (state: EditorState, newValue: boolean): EditorSta
     return state;
   }
   const selectedNodes = Array.from(state.selectedNodes);
+  const newNodes = Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
+    ...state.nodes[nodeId],
+    triangle: newValue,
+  }]));
+  const historyEntry = new NodeUndoRedoHistoryEntry(Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
+    before: state.nodes[nodeId],
+    after: newNodes[nodeId],
+  }])));
   return {
     ...state,
     nodes: {
       ...state.nodes,
-      ...Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
-        ...state.nodes[nodeId],
-        triangle: newValue
-      }]))
-    }
+      ...newNodes,
+    },
+    undoRedoHistory: state.undoRedoHistory.register(historyEntry),
   };
 };
 
@@ -94,17 +105,28 @@ export const deleteNodes = (state: EditorState): EditorState => {
     return state;
   }
   const selectedNodes = Array.from(state.selectedNodes);
+  const newParentNodes = Object.entries(state.nodes)
+    // find the nodes that need to change (because they were parents of the deleted nodes)
+    .filter(([_, node]) => node.children && intersection(node.children, selectedNodes).length)
+    // update the children
+    .map(([nodeId, node]) => [nodeId, { ...node, children: difference(node.children, selectedNodes) }] as [NodeId, NodeData])
+    // convert back into an object
+    .reduce((accum, [nodeId, node]) => ({ ...accum, [nodeId]: node }), {}) as NodeTree;
+  const historyEntry = new NodeUndoRedoHistoryEntry(selectedNodes.reduce((accum, nodeId) => ({
+    ...accum,
+    [nodeId]: { before: state.nodes[nodeId], after: null },
+  }), Object.entries(newParentNodes).reduce((accum, [nodeId, node]) => ({
+    ...accum,
+    [nodeId]: { before: state.nodes[nodeId], after: node }
+  }), {})));
   return {
     ...state,
     selectedNodes: null,
-    nodes: chain(state.nodes)
-      .omit(selectedNodes)
-      .toPairs()
-      .map(([nodeId, node]) => [nodeId, node.children ? ({
-        ...node,
-        children: without(node.children, ...selectedNodes)
-      }) : node])
-      .fromPairs().value()
+    nodes: {
+      ...omit(state.nodes, selectedNodes),
+      ...newParentNodes,
+    },
+    undoRedoHistory: state.undoRedoHistory.register(historyEntry),
   };
 };
 
@@ -157,7 +179,12 @@ export const completeAdoption = (state: EditorState, nodeIds: NodeId[] | null, r
     ...state.nodes[adoptingNode],
     ...newNodeDef
   }
-  const historyEntry = new NodeUndoRedoHistoryEntry(adoptingNode, state.nodes[adoptingNode], newNode);
+  const historyEntry = new NodeUndoRedoHistoryEntry({
+    [adoptingNode]: {
+      before: state.nodes[adoptingNode],
+      after: newNode
+    }
+  });
   return {
     ...state,
     nodes: {
@@ -183,7 +210,12 @@ export const completeDisowning = (state: EditorState, nodeIds: NodeId[] | null):
     ...state.nodes[disowningNode],
     ...newNodeDef
   }
-  const historyEntry = new NodeUndoRedoHistoryEntry(disowningNode, state.nodes[disowningNode], newNode);
+  const historyEntry = new NodeUndoRedoHistoryEntry({
+    [disowningNode]: {
+      before: state.nodes[disowningNode],
+      after: newNode
+    }
+  });
   return {
     ...state,
     nodes: {

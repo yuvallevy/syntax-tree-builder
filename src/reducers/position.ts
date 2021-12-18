@@ -1,3 +1,4 @@
+import { NodeUndoRedoHistoryEntry } from '../undoRedoHistory';
 import { EditorState } from './interfaces';
 
 export const moveNodes = (state: EditorState, dx: number, dy: number): EditorState => {
@@ -5,16 +6,22 @@ export const moveNodes = (state: EditorState, dx: number, dy: number): EditorSta
     return state;
   }
   const selectedNodes = Array.from(state.selectedNodes);
+  const newNodes = Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
+    ...state.nodes[nodeId],
+    offsetX: state.nodes[nodeId].offsetX + dx,
+    offsetY: state.nodes[nodeId].offsetY + dy
+  }]));
+  const historyEntry = new NodeUndoRedoHistoryEntry(Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
+    before: state.nodes[nodeId],
+    after: newNodes[nodeId],
+  }])));
   return {
     ...state,
     nodes: {
       ...state.nodes,
-      ...Object.fromEntries(selectedNodes.map(nodeId => [nodeId, {
-        ...state.nodes[nodeId],
-        offsetX: state.nodes[nodeId].offsetX + dx,
-        offsetY: state.nodes[nodeId].offsetY + dy
-      }])),
+      ...newNodes,
     },
+    undoRedoHistory: state.undoRedoHistory.register(historyEntry),
   };
 };
 
